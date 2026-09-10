@@ -237,7 +237,7 @@ t2.1.11 Filter Customer List by Status - Suspended
 t2.1.12 Customer Profile View - Details Verification
     [Documentation]    Verify that clicking View Profile displays the customer's full profile
     ...                with all required section headers and fields correctly visible.
-    [Tags]             customers    smoke    mvp    type1.1    
+    [Tags]             customers    smoke    mvp    type1
     Navigate To Customers
     View Customer Profile      ${VALID_CUSTOMER_NAME}
     # Verify all fields — continue on failure so ALL mismatches are reported
@@ -306,7 +306,7 @@ t2.1.12 Customer Profile View - Details Verification
     Run Keyword And Continue On Failure
     ...    Wait For Elements State    text=ID (Back)                        visible
 
-t2.1.12 Customer Profile View - Details Verification
+t2.1.12b Customer Profile View - Details Verification (Product Tabs)
     [Documentation]    Verify that clicking View Profile displays the customer's full profile
     ...                with all required section headers and fields correctly visible.
     [Tags]             customers    smoke    mvp    type2

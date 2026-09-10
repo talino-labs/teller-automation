@@ -80,14 +80,15 @@ Fill Employer Name
     [Documentation]    Fills the loan product's custom text field. The custom field NAME varies
     ...                per product (e.g. employerName, tellUsSomethingAboutYourself), so target
     ...                any field that is not one of the standard loan-detail inputs rather than a
-    ...                hardcoded name. Fills every such custom input with ${T26_EMPLOYER_NAME} so
+    ...                hardcoded name. Fills every such custom input with ${value} so
     ...                the downstream value checks still work.
+    [Arguments]    ${value}=${T26_EMPLOYER_NAME}
     ${custom}=    Set Variable
     ...    css=[data-field]:not([data-field="loanAmount"]):not([data-field="interestRate"]):not([data-field="termLength"]):not([data-field="disbursementMode"]) input
     Wait For Elements State      ${custom} >> nth=0    visible    timeout=10s
     ${count}=    Get Element Count    ${custom}
     FOR    ${i}    IN RANGE    ${count}
-        Fill Text    ${custom} >> nth=${i}    ${T26_EMPLOYER_NAME}
+        Fill Text    ${custom} >> nth=${i}    ${value}
     END
 
 Select Disbursement Mode
@@ -512,7 +513,7 @@ t2.6.9 Modify Loan Details and Custom Field Inputs on Review Step and Re-Confirm
 
     # Modify the loan amount and employer name
     Fill Text                    ${AVAIL_LOAN_AMOUNT_INPUT}             ${T26_MODIFIED_LOAN_AMOUNT}
-    Fill Text                    ${AVAIL_LOAN_EMPLOYER_NAME_INPUT}      ${T26_MODIFIED_EMPLOYER_NAME}
+    Fill Employer Name           ${T26_MODIFIED_EMPLOYER_NAME}
 
     # Continue back to Review — modified values should appear in summary
     Click                        ${AVAIL_PRODUCT_CONTINUE_BTN}
@@ -701,8 +702,8 @@ t2.6.19 Leave Required Custom Fields Empty – Loans Availment
     # Do not fill Employer Name
 
     # Fill then clear to trigger inline validation
-    Fill Text                    ${AVAIL_LOAN_EMPLOYER_NAME_INPUT}    x
-    Press Keys                   ${AVAIL_LOAN_EMPLOYER_NAME_INPUT}    Backspace
+    Fill Text                    ${AVAIL_LOAN_CUSTOM_FIELD_INPUT}    x
+    Press Keys                   ${AVAIL_LOAN_CUSTOM_FIELD_INPUT}    Backspace
     Click                        ${AVAIL_PRODUCT_PAGE} >> text=Customer Details
 
     Run Keyword And Continue On Failure
@@ -763,7 +764,7 @@ t2.6.21 Exit Loans Availment Flow Mid-Process – Confirm Discard
     # Restart the avail flow — form should be clean
     Navigate To Avail Loan Product Page
     ${loan_amount_value}=    Get Property    ${AVAIL_LOAN_AMOUNT_INPUT}             value
-    ${employer_value}=       Get Property    ${AVAIL_LOAN_EMPLOYER_NAME_INPUT}      value
+    ${employer_value}=       Get Property    ${AVAIL_LOAN_CUSTOM_FIELD_INPUT}      value
     Run Keyword And Continue On Failure
     ...    Should Be Empty    ${loan_amount_value}
     Run Keyword And Continue On Failure

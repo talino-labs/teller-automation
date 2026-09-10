@@ -681,7 +681,7 @@ t2.5.15 Attempt to Avail Savings Product for Customer with Invalid Status
     [Documentation]    Verify that availing a product for an inactive/closed customer is blocked
     ...                at the confirmation step. The user can navigate through Customer Information
     ...                and reach the Review step, but clicking Confirm and Avail surfaces an error:
-    ...                "The customer is in an invalid state and cannot proceed."
+    ...                "This request cannot be completed at this time."
     ...                Requires T25_INVALID_STATUS_CUSTOMER to be set to an inactive/closed customer.
     [Tags]             customers    products    regression    validation    type2
 
@@ -708,7 +708,7 @@ t2.5.15 Attempt to Avail Savings Product for Customer with Invalid Status
     Wait For Load Spinner To Disappear
     Run Keyword And Continue On Failure
     ...    Wait For Elements State
-    ...    text=The customer is in an invalid state and cannot proceed. Please verify the customer's status and try again.
+    ...    text=This request cannot be completed at this time. Please contact your branch or customer support for assistance.
     ...    visible    timeout=10s
 
 t2.5.16 Leave Required Custom Fields Empty – Savings Availment

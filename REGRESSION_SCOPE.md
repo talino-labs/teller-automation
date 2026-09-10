@@ -94,3 +94,87 @@ bash run_limited_smoke.sh Guagua-SBX
 bash publish_reports.sh --timestamp Teller_SBX_and_SIT_July2026_Smoke_Testing \
   --title "Teller SBX and SIT July 2026 Smoke Testing"
 ```
+
+---
+
+# 2026-09-10 Full Regression — rural-bank-san-antonio (ITG)
+
+Run folder: `results/2026-09_full-regression/` — every test, no `--include` tag
+filter (only `skip` excluded), executed in 4 batches by rate-limit risk.
+
+**Result: 294 passed / 68 failed / 17 skipped (379 tests, 25 TCs).**
+
+| Module | Pass | Fail | Skip |
+|--------|-----:|-----:|-----:|
+| Customers (t2.1–t2.6)    | 82 | 9  | 2 |
+| Accounts (t3.1–t3.2)     | 27 | 1  | 0 |
+| Transactions (t4.1–t4.3) | 59 | 1  | 5 |
+| Products (t5.1–t5.3)     | 52 | 0  | 1 |
+| Reports (t6.1)           |  1 | 3  | 0 |
+| Loans (t7.1–t7.6)        | 50 | 13 | 0 |
+| Auth (t1.1–t1.4)         | 23 | 41 | 9 |
+
+## Product defects — escalate
+- **Status change silently fails** (t2.1.13/.14, t2.2.11/.13). Customer *and*
+  account. The modal submits, dismisses itself, persists nothing and shows no
+  error. Confirmed: `Last Updated` unchanged, and a re-query by status returns
+  "No data".
+- **Loan payment total double-counts interest** (t7.6.11). Total Amount Paid
+  `839.94` vs Principal `835.76` + Interest `2.09` = `837.85`. The gap is
+  exactly the interest, i.e. `Total = Principal + 2 x Interest`.
+
+## Environment blockers — need admin, not code
+- **Auth rate limit.** Network-level block: *"Too many requests from this
+  network, try again after 1 hour."* One manual reset buys ~20 tests. 41 auth
+  failures are artifacts of this, not defects. Needs the QA IP whitelisted.
+  See [[itg-rate-limit-blocker]] notes.
+- **Approver lacks Loans permission** (all of t7.2 + t7.3.1 = 11 tests).
+  `pvillados+u1`-style approver `pvillados@agsx.net` authenticates but the app
+  returns **"Access Restricted — your current role doesn't include permission
+  to view this page."** t7.3.1 depends on t7.2 approving a loan first.
+
+## Open question
+- Transaction `547fa043e7424b6c956926466daa91df` (Fund Transfer) returns an
+  empty detail payload — every field `N/A`, amounts `0.00` — while
+  `20327d2dec2046b1bf2c3353c94c0fcf` (External Transfer) renders all 12 fields
+  correctly. Bad record, or Fund-Transfer-specific? One manual check settles it.
+  Affects t2.3.4 and t3.2.4 (both use that same record).
+
+## Test defects fixed in this commit
+- **t1.4.2–.8** passed `email=${TELLER_EMAIL}` while `password` still defaulted
+  to `${CP_USER_PASSWORD}`, so they never reached the change-password form —
+  they died at login. These 7 tests had never actually tested anything.
+- **t1.4.1** changed the CP account's password with nothing to restore it,
+  poisoning `${CP_USER_PASSWORD}` for the rest of the suite and all later runs.
+  Now has a `Restore CP Password And Close Browser` teardown (idempotent).
+- **t2.6.9/.19/.21** hardcoded `[data-field="employerName"]`; the product under
+  test uses `tellUsSomethingAboutYourself`. Now use the product-agnostic helper
+  / `${AVAIL_LOAN_CUSTOM_FIELD_INPUT}`.
+- **t2.1.12 was defined twice** under one name (a `type1.1` typo variant and a
+  `type2` product-tabs variant). Renamed the second to `t2.1.12b` and corrected
+  `type1.1` -> `type1`; `run_limited_smoke.sh` now filters `t2.1.12b` so Type 1
+  banks keep real profile-detail coverage instead of losing both variants.
+- **t2.5.15** expected superseded copy; the guardrail works, only the message
+  changed to *"This request cannot be completed at this time..."*.
+- **t7.5.5** clicked a row without searching first, but `Test Setup` lands on
+  the unfiltered list. Now searches, like every other test in that suite.
+
+## Still to do
+- **t6.1 (3 tests)** predates the Reports redesign: the suite expects
+  date-select -> `Download CSV`, but the UI now has `Generate Report` with an
+  async status. **Whether report generation works at all is still unverified** —
+  the suite never gets far enough to tell.
+- **`T4_TXN_CREDIT_BANK_NAME`** pairs BIC `RCBCPHMMXXX` (RCBC) with the name
+  "Banco Abucay". The true display string can't be recovered from the artifacts
+  because `:text-is()` logs nothing on a miss — needs one look at the modal.
+
+## Runner changes
+- `run_july_regression.sh`: `--all-tags` (drop the `--include` filter entirely —
+  `type1`/`type2` are bank-CAPABILITY tags, not depth tags, and 15 tests carry
+  neither, so any tag union silently drops applicable tests on a Type 2 bank);
+  `--headless` (`-v HEADLESS:True`, since all var files ship `HEADLESS: False`
+  and a visible Chromium gets long runs OOM-killed); and explicit TC arguments
+  now execute in the order given rather than filesystem sort order — auth needs
+  t1.1 LAST or it burns the attempt budget before the login suites run.
+- `run_full_regression_batched.sh`: new batched wrapper (Reports+Customers /
+  Accounts+Transactions / Products+Loans / Auth), auth last and alone.

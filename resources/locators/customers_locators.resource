@@ -191,4 +191,8 @@ ${AVAIL_LOAN_INTEREST_RATE_INPUT}   css=[data-field="interestRate"] input.ant-in
 ${AVAIL_LOAN_TERM_LENGTH_INPUT}     css=[data-field="termLength"] input.ant-input-number-input
 ${AVAIL_LOAN_DISBURSEMENT_SELECT}   css=[data-field="disbursementMode"] .ant-select-selector
 ${AVAIL_LOAN_EMPLOYER_NAME_INPUT}   css=[data-field="employerName"] input
+# Product-agnostic: the loan custom field is named per product (employerName on
+# some, tellUsSomethingAboutYourself on Regular Home Loan), so match any
+# [data-field] input that is not one of the four standard loan-detail inputs.
+${AVAIL_LOAN_CUSTOM_FIELD_INPUT}    css=[data-field]:not([data-field="loanAmount"]):not([data-field="interestRate"]):not([data-field="termLength"]):not([data-field="disbursementMode"]) input >> nth=0
 ${AVAIL_LOAN_SUCCESS_PANEL}         css=[data-testid="field-avail-product-success"]

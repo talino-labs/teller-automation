@@ -213,6 +213,12 @@ t7.5.4 Completed Cash payment logs Debit Account as N/A and Credit Account as th
 t7.5.5 Repayment progress percentage updates correctly after a new payment is recorded
     [Documentation]    Validates dynamic dashboard calculation updates.
     [Tags]             loans    repayments    metrics    type2
+    # Test Setup lands on the UNFILTERED Active Loans list, so search for the
+    # target account first — otherwise the row is only present if it happens to
+    # fall on page 1 (see t7.5's other tests, which all search before clicking).
+    Fill Text                  ${ACTIVE_LOANS_SEARCH_INPUT}    ${T75_DYNAMIC_ACCOUNT_NO}
+    Click                      ${ACTIVE_LOANS_SEARCH_BTN}
+    Wait For Load Spinner To Disappear
     # Open view schedule page to review initial progress state
     Click    ${ACTIVE_LOANS_TABLE} >> tbody tr.ant-table-row:has-text("${T75_DYNAMIC_ACCOUNT_NO}") >> ${ACTIVE_LOANS_VIEW_SCHEDULE_BTN} >> nth=0
     Wait For Elements State    ${LOAN_SCHEDULE_STATUS_CARD}    visible    timeout=10s

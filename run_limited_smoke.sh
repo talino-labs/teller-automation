@@ -46,7 +46,7 @@ ROOT = os.path.join(script_dir, 'results', run, bank)
 # Read-only sub-tests to drop from the report, matched on the exact "tX.Y.N " prefix.
 # (status-change tests are already excluded at run time via --exclude-tag.)
 EXCLUDE = {
-    't2.1': ['t2.1.12 '],                                                 # eligible-products tab (needs Products module)
+    't2.1': ['t2.1.12b '],                                                # product-tabs variant only (needs Products module); the type1 variant is kept
     't2.3': ['t2.3.10 ', 't2.3.11 ', 't2.3.12 ', 't2.3.13 ', 't2.3.14 '], # cash/interest/loan type filters
     't3.2': ['t3.2.9 ', 't3.2.10 ', 't3.2.11 ', 't3.2.12 ', 't3.2.13 '],  # cash/interest/loan type filters
     't4.1': ['t4.1.5 ', 't4.1.9 ', 't4.1.10 ', 't4.1.11 ', 't4.1.12 ', 't4.1.13 '],  # external search + type filters

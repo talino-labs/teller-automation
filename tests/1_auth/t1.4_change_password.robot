@@ -61,6 +61,27 @@ Complete Change Password Form
     Click                       ${CP_CONTINUE_BTN}
     Wait For Elements State     ${CP_OTP_INPUT}    visible
 
+Restore CP Password And Close Browser
+    [Documentation]    t1.4.1 changes the CP account's password and nothing puts it back,
+    ...                which leaves ${CP_USER_PASSWORD} stale and fails every later test —
+    ...                and every later run — at the login screen. Change it back so the
+    ...                suite is idempotent. Best effort: the restore must never mask the
+    ...                test's own verdict, and the browser must close either way.
+    ...                NOTE: t1.4.1 ends logged in, and Login To Teller App always opens a
+    ...                NEW browser, so close the existing session first and close ALL at
+    ...                the end rather than leaking one.
+    Run Keyword And Ignore Error    Close Browser
+    Run Keyword And Ignore Error    Restore CP Password
+    Close Browser    ALL
+
+Restore CP Password
+    [Documentation]    Changes the CP account's password from ${CP_NEW_PASSWORD} back to
+    ...                ${CP_USER_PASSWORD} so config and environment stay in agreement.
+    Navigate To Change Password Page    email=${CP_USER_EMAIL}    password=${CP_NEW_PASSWORD}
+    Complete Change Password Form       current_password=${CP_NEW_PASSWORD}    new_password=${CP_USER_PASSWORD}
+    Enter CP OTP And Continue
+    Wait For Elements State     ${CP_SUCCESS_MESSAGE}    visible
+
 Enter CP OTP And Continue
     [Documentation]    Clicks the OTP input, types the OTP code, and clicks CONTINUE.
     [Arguments]        ${otp}=${OTP}
@@ -79,6 +100,7 @@ t1.4.1 Reset Password via Change Password
     [Documentation]    Verify a logged-in teller can successfully change their password via
     ...                the profile dropdown and see the success confirmation modal.
     [Tags]             change-password    smoke    password-reset    mvp    type1
+    [Teardown]         Restore CP Password And Close Browser
 
     Navigate To Change Password Page     email=${CP_USER_EMAIL}
     Complete Change Password Form
@@ -108,7 +130,7 @@ t1.4.2 Change Password – Mismatched Password and Confirm Password
     ...                keeps the CONTINUE button disabled.
     [Tags]             change-password    negative    mvp    type1
 
-    Navigate To Change Password Page    email=${TELLER_EMAIL}
+    Navigate To Change Password Page    email=${TELLER_EMAIL}    password=${TELLER_PASSWORD}
     Fill Text                   ${CP_CURRENT_PWD_FIELD}      ${TELLER_PASSWORD}
     Fill Text                   ${CP_NEW_PWD_FIELD}          ${CP_NEW_PASSWORD}
     Fill Text                   ${CP_CONFIRM_PWD_FIELD}      ${CP_WRONG_CONFIRM_PASSWORD}
@@ -123,7 +145,7 @@ t1.4.3 Change Password – Leave Password Fields Blank
     ...                on initial page load.
     [Tags]             change-password    negative    mvp    type1
 
-    Navigate To Change Password Page    email=${TELLER_EMAIL}    # Fields are blank by default upon landing on the page
+    Navigate To Change Password Page    email=${TELLER_EMAIL}    password=${TELLER_PASSWORD}    # Fields are blank by default upon landing on the page
     Wait For Elements State     ${CP_CONTINUE_BTN}    disabled
 
 
@@ -135,7 +157,7 @@ t1.4.4 Change Password – Password Too Short
     [Documentation]    Verify validation for passwords under 8 characters.
     [Tags]             change-password    negative    mvp    type1
 
-    Navigate To Change Password Page    email=${TELLER_EMAIL}
+    Navigate To Change Password Page    email=${TELLER_EMAIL}    password=${TELLER_PASSWORD}
     Fill Text                   ${CP_NEW_PWD_FIELD}    Abc1!
     Wait For Elements State     text=${ERR_PWD_MIN_LENGTH}    visible
     Wait For Elements State     ${CP_CONTINUE_BTN}            disabled
@@ -144,7 +166,7 @@ t1.4.5 Change Password – Password Without Uppercase Letter
     [Documentation]    Verify validation for a password missing an uppercase letter.
     [Tags]             change-password    negative    mvp    type1
 
-    Navigate To Change Password Page    email=${TELLER_EMAIL}
+    Navigate To Change Password Page    email=${TELLER_EMAIL}    password=${TELLER_PASSWORD}
     Fill Text                   ${CP_NEW_PWD_FIELD}    abc12345!
     Wait For Elements State     text=${ERR_PWD_UPPERCASE}    visible
     Wait For Elements State     ${CP_CONTINUE_BTN}           disabled
@@ -153,7 +175,7 @@ t1.4.6 Change Password – Password Without Number
     [Documentation]    Verify validation for a password missing a number.
     [Tags]             change-password    negative    mvp    type1
 
-    Navigate To Change Password Page    email=${TELLER_EMAIL}
+    Navigate To Change Password Page    email=${TELLER_EMAIL}    password=${TELLER_PASSWORD}
     Fill Text                   ${CP_NEW_PWD_FIELD}    Abcdefgh!
     Wait For Elements State     text=${ERR_PWD_NUMBER}       visible
     Wait For Elements State     ${CP_CONTINUE_BTN}           disabled
@@ -162,7 +184,7 @@ t1.4.7 Change Password – Password Without Special Character
     [Documentation]    Verify validation for a password missing a special character.
     [Tags]             change-password    negative    mvp    type1
 
-    Navigate To Change Password Page    email=${TELLER_EMAIL}
+    Navigate To Change Password Page    email=${TELLER_EMAIL}    password=${TELLER_PASSWORD}
     Fill Text                   ${CP_NEW_PWD_FIELD}    Abcdef123
     Wait For Elements State     text=${ERR_PWD_SPECIAL}      visible
     Wait For Elements State     ${CP_CONTINUE_BTN}           disabled
@@ -172,7 +194,7 @@ t1.4.8 Change Password – Sequential Validation of Multiple Violations
     ...                cascade correctly as the user fixes them one by one.
     [Tags]             change-password    negative    mvp    type1
 
-    Navigate To Change Password Page    email=${TELLER_EMAIL}
+    Navigate To Change Password Page    email=${TELLER_EMAIL}    password=${TELLER_PASSWORD}
     # 1. Too short
     Fill Text                   ${CP_NEW_PWD_FIELD}    abc
     Wait For Elements State     text=${ERR_PWD_MIN_LENGTH}    visible
