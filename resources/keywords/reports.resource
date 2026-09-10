@@ -127,7 +127,10 @@ Download Report CSV
     # the blob stays alive long enough for Playwright to save the file.
     Evaluate JavaScript    ${None}    () => { window.URL.revokeObjectURL = () => {}; }
     ${promise}=    Promise To Wait For Download    saveAs=${save_path}
-    Click    ${DOWNLOAD_CSV_BTN}
+    # Redesigned flow: "Generate Report" opens a "Preparing your download" modal that
+    # shows "Generating reports for <date>", then "Your download is ready" once the
+    # backend has built the file — the download fires itself at that point.
+    Click    ${GENERATE_REPORT_BTN}
     # Fail fast with a clear message if the backend returns a "Failed to generate report"
     # error toast, instead of blindly waiting out the full download timeout.
     ${server_failed}=    Run Keyword And Return Status
@@ -135,5 +138,18 @@ Download Report CSV
     IF    ${server_failed}
         Fail    App returned "Failed to generate report" — the backend did not produce the report (server-side error, not a test issue).
     END
+    # Generation is server-side and can take a while, so allow a generous window.
+    Run Keyword And Continue On Failure
+    ...    Wait For Elements State    ${DOWNLOAD_READY_MSG}    visible    timeout=60s
     ${download}=    Wait For    ${promise}
     RETURN    ${download}[suggestedFilename]
+
+Close Download Modal
+    [Documentation]    Dismisses the "Preparing your download" modal via Back so the next
+    ...                report type can be selected from a clean page.
+    ${open}=    Run Keyword And Return Status
+    ...    Wait For Elements State    ${DOWNLOAD_MODAL}    visible    timeout=3s
+    IF    ${open}
+        Click                      ${DOWNLOAD_MODAL_BACK_BTN}
+        Wait For Elements State    ${DOWNLOAD_MODAL}    hidden    timeout=10s
+    END

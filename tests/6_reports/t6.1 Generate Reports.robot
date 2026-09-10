@@ -9,6 +9,10 @@ Resource            ../../resources/keywords/reports.resource
 Suite Setup         Login To Teller App
 Suite Teardown      Close Browser
 Test Setup          Setup Reports Page
+# The redesigned flow leaves the "Preparing your download" modal open after a
+# report is generated, and its overlay swallows clicks on the sidebar — which
+# made the NEXT test fail in Setup on nav-sidebar-reports. Dismiss it between tests.
+Test Teardown       Close Download Modal
 
 
 *** Test Cases ***
@@ -46,7 +50,7 @@ t6.1.2 Generate End of Day Report (Valid Closing Date)
     Click                      ${EOD_BALANCE_BTN}
     Wait For Elements State    ${CLOSING_DATE_INPUT}    visible
     Select Closing Date From AntD Picker    ${VALID_CLOSING_DATE}
-    Wait For Elements State    ${DOWNLOAD_CSV_BTN}      enabled
+    Wait For Elements State    ${GENERATE_REPORT_BTN}    enabled
     # Download and save the CSV
     ${save_path}=              Set Variable    ${OUTPUT DIR}/eod_report_${VALID_CLOSING_DATE}.csv
     ${filename}=               Download Report CSV    ${save_path}
@@ -87,7 +91,7 @@ t6.1.3 Generate Total Balance Report (Valid Date Range)
     Click                      ${TOTAL_BALANCE_BTN}
     Wait For Elements State    ${DATE_RANGE_START_INPUT}    visible
     Select Report Date Range From AntD Picker    ${VALID_DATE_FROM}    ${VALID_DATE_TO}
-    Wait For Elements State    ${DOWNLOAD_CSV_BTN}          enabled
+    Wait For Elements State    ${GENERATE_REPORT_BTN}        enabled
     # Download and save the CSV
     ${save_path}=              Set Variable    ${OUTPUT DIR}/total_balance_report_${VALID_DATE_FROM}_${VALID_DATE_TO}.csv
     ${filename}=               Download Report CSV    ${save_path}
@@ -111,8 +115,8 @@ t6.1.3 Generate Total Balance Report (Valid Date Range)
 
 t6.1.4 Verify Future Date Selection Is Blocked for Reports
     [Documentation]    Verify that future dates are disabled in both the End of Day closing date picker
-    ...                and the Total Balance date range picker. The Download CSV button must remain
-    ...                disabled when no valid date has been selected.
+    ...                and the Total Balance date range picker. The Generate Report button must
+    ...                remain disabled when no valid date has been selected.
     [Tags]             reports    regression    mvp    type1
     # --- End of Day Balance ---
     Click                      ${EOD_BALANCE_BTN}
@@ -123,8 +127,8 @@ t6.1.4 Verify Future Date Selection Is Blocked for Reports
     Wait For Elements State    css=.ant-picker-dropdown:not(.ant-picker-dropdown-hidden) .ant-picker-cell-disabled >> nth=0    visible
     Keyboard Key               press    Escape
     Wait For Elements State    css=.ant-picker-dropdown:not(.ant-picker-dropdown-hidden)    hidden
-    # Download CSV must remain disabled with no date selected
-    Wait For Elements State    ${DOWNLOAD_CSV_BTN}    disabled
+    # Generate Report must remain disabled with no date selected
+    Wait For Elements State    ${GENERATE_REPORT_BTN}    disabled
     # --- Total Balance ---
     Click                      ${TOTAL_BALANCE_BTN}
     Wait For Elements State    ${DATE_RANGE_START_INPUT}    visible
@@ -134,5 +138,5 @@ t6.1.4 Verify Future Date Selection Is Blocked for Reports
     Wait For Elements State    css=.ant-picker-dropdown:not(.ant-picker-dropdown-hidden) .ant-picker-cell-disabled >> nth=0    visible
     Keyboard Key               press    Escape
     Wait For Elements State    css=.ant-picker-dropdown:not(.ant-picker-dropdown-hidden)    hidden
-    # Download CSV must remain disabled with no date range selected
-    Wait For Elements State    ${DOWNLOAD_CSV_BTN}    disabled
+    # Generate Report must remain disabled with no date range selected
+    Wait For Elements State    ${GENERATE_REPORT_BTN}    disabled

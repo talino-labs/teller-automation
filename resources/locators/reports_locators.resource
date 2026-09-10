@@ -24,5 +24,13 @@ ${CLOSING_DATE_INPUT}               css=input[placeholder="DD MMM YYYY"]
 ${DATE_RANGE_START_INPUT}           css=input[placeholder="Start date"][date-range="start"]
 ${DATE_RANGE_END_INPUT}             css=input[placeholder="End date"][date-range="end"]
 
-# Download
-${DOWNLOAD_CSV_BTN}                 css=button:has-text("Download CSV")
+# Download — the Reports module was redesigned: there is no longer a "Download CSV"
+# button that simply enables once a date is picked. You now click "Generate Report",
+# a "Preparing your download" modal appears ("Generating reports for <date>"), and
+# when it finishes it shows "Your download is ready" and the file downloads itself.
+${GENERATE_REPORT_BTN}              css=button:has-text("Generate Report")
+${DOWNLOAD_MODAL}                   css=.ant-modal-content:has-text("Preparing your download")
+${DOWNLOAD_GENERATING_MSG}          text=Generating reports for
+${DOWNLOAD_READY_MSG}               text=Your download is ready
+${DOWNLOAD_FALLBACK_LINK}           text=Click here if your download has not started
+${DOWNLOAD_MODAL_BACK_BTN}          css=.ant-modal-content button:has-text("Back")

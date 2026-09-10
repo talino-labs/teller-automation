@@ -39,9 +39,9 @@ RTP_WRONG_CONFIRM_PASSWORD: "Password1234!"
 # ============================================================
 
 MIXED_CASE_EMAIL: "JJavier+1@NmBlR.aI"    # mixed-case of TELLER_EMAIL (paired with TELLER_PASSWORD)
-FP_MIXED_CASE_EMAIL: "Pvillados+U1@Agsx.Net"
-CP_USER_EMAIL: "pvillados+u1@agsx.net"
-CP_USER_PASSWORD: "Password123!"
+FP_MIXED_CASE_EMAIL: "JJavier+1@NmBlR.aI"    # mixed-case of CP_USER_EMAIL (pvillados+u1 was deleted)
+CP_USER_EMAIL: "jjavier+1@nmblr.ai"    # pvillados+u1 was deleted
+CP_USER_PASSWORD: "Password!2"
 
 
 # ============================================================
