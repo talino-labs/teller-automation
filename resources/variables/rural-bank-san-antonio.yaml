@@ -82,9 +82,13 @@ EXPECTED_CREATED_ON: "07 Jul 2025"
 # Transaction Data — Customers & Accounts modules (t2.3, t3.2)
 # ============================================================
 
-VALID_TXN_ID: "547fa043e7424b6c956926466daa91df"
+# Repointed away from 547fa043… — that record (and other pre-2026 records in this
+# account) returns an errored/empty detail payload ("ERR - N/A"); see
+# ESCALATIONS_2026-09.md defect #4. fffcf209… is a healthy Fund Transfer in the
+# same account (Shia Nadela -> Peach Villados), values verified against ITG.
+VALID_TXN_ID: "fffcf209b08049a4b87f28be8f3c1a3c"
 TXN_TYPE: "Fund Transfer"
-TXN_AMOUNT: "88.00"
+TXN_AMOUNT: "1,500.00"
 TXN_SERVICE_FEE: "0.00"
 TXN_REMARKS: "N/A"
 TXN_STATUS: "Success"
@@ -92,8 +96,8 @@ TXN_DEBIT_ACCT_NAME: "Shia Nadela"
 TXN_CREDIT_ACCT_NAME: "Peach Villados"
 TXN_DEBIT_ACCT_NO: "7710458497847416"
 TXN_CREDIT_ACCT_NO: "7710458152114857"
-TXN_CREATED_ON: "02 Dec 2025 15:28:57"
-TXN_UPDATED_ON: "02 Dec 2025 15:28:57"
+TXN_CREATED_ON: "10 Apr 2026 08:50:48"
+TXN_UPDATED_ON: "10 Apr 2026 08:50:48"
 DATE_FROM: "2026-04-23"
 DATE_TO: "2026-04-24"
 
@@ -120,7 +124,9 @@ T4_TXN_CREDIT_ACCT_NAME: "Alexandra Leclerc"
 T4_TXN_DEBIT_ACCT_NO: "7710374359311354"
 T4_TXN_CREDIT_ACCT_NO: "7710527851369522"
 T4_TXN_CREDIT_BANK_CODE: "RCBCPHMMXXX"
-T4_TXN_CREDIT_BANK_NAME: "Banco Abucay"
+# BIC RCBCPHMMXXX renders as this display string in the txn-detail modal
+# (verified against ITG record 20327d2d…). Was wrongly seeded "Banco Abucay".
+T4_TXN_CREDIT_BANK_NAME: "Rizal Commercial Banking Corporation"
 T4_TXN_CREATED_ON: "22 Apr 2026 16:46:11"
 T4_DATE_FROM: "2026-06-01"
 T4_DATE_TO: "2026-06-03"
