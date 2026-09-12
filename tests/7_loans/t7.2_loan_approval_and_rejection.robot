@@ -384,10 +384,13 @@ t7.2.10 Verify Separation of Duties – Same Teller Cannot Reject Own Applicatio
     Click                        text=Log out
     Wait For Elements State      ${LOGIN_BUTTON}    visible    timeout=10s
 
-    # 2. Reuse the current browser — fill credentials directly without opening a new browser
+    # 2. Reuse the current browser — log in as the MAKER (default teller), the one
+    #    who created the application. "Cannot reject own" only triggers for the
+    #    maker; logging in as the approver (a different teller) would just reject
+    #    the app. Was T72_APPROVER_EMAIL — wrong account for this SoD check.
     Wait For Elements State      ${EMAIL_FIELD}     visible    timeout=15s
-    Fill Text                    ${EMAIL_FIELD}     ${T72_APPROVER_EMAIL}
-    Fill Text                    ${PASSWORD_FIELD}  ${T72_APPROVER_PASSWORD}
+    Fill Text                    ${EMAIL_FIELD}     ${TELLER_EMAIL}
+    Fill Text                    ${PASSWORD_FIELD}  ${TELLER_PASSWORD}
     Click                        ${LOGIN_BUTTON}
     Wait For Elements State      css=h3.text-2xl    visible    timeout=30s
 
