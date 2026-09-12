@@ -387,11 +387,15 @@ T81_PRODUCT_A_CUSTOMER_NAME: ""        # TODO: customer under Product A with ₱
 T81_PRODUCT_A_ACCOUNT_NO: ""           # TODO: account number under Product A
 T81_PRODUCT_A_EXPECTED_INTEREST: "2.74"  # 50,000 × (2/100/365)
 
-# Product B (5% rate) — premium savings product
+# Product B — NOTE: no 5% product exists in this tenant. Pointed at a real
+# account that HAS credited Savings-Interest records so the structural history/
+# detail tests (t8.1.6/.7) can run. Amount-based/daily-computation tests still
+# need a purpose-built daily-interest account — the system credits MONTHLY ~2%
+# (verified), not daily as t8.1 assumes. See ESCALATIONS/scope notes.
 T81_PRODUCT_B_RATE: "5"
-T81_PRODUCT_B_CUSTOMER_NAME: ""        # TODO: customer under Product B with ₱50,000 balance
-T81_PRODUCT_B_ACCOUNT_NO: ""           # TODO: account number under Product B
-T81_PRODUCT_B_EXPECTED_INTEREST: "6.85"  # 50,000 × (5/100/365)
+T81_PRODUCT_B_CUSTOMER_NAME: "Jace Amban"                 # real acct with interest records
+T81_PRODUCT_B_ACCOUNT_NO: "7710373294475998"             # Active; credited 455.87 (monthly ~2%)
+T81_PRODUCT_B_EXPECTED_INTEREST: "6.85"  # 50,000 × (5/100/365) — unmatched (see note)
 
 # High-balance account (₱1,000,000.00 under Product B, 5%)
 T81_HIGH_BAL_CUSTOMER_NAME: ""         # TODO: customer with ₱1,000,000 balance under Product B

@@ -140,7 +140,7 @@ t8.1.7 Viewing specific transaction details displays correct values
     # Verify all required detail fields
     Run Keyword And Continue On Failure    Wait For Elements State    ${ACCT_TXN_DETAIL_MODAL} >> text=Transaction ID               visible
     Run Keyword And Continue On Failure    Wait For Elements State    ${ACCT_TXN_DETAIL_MODAL} >> text=Transaction Type             visible
-    Run Keyword And Continue On Failure    Wait For Elements State    ${ACCT_TXN_DETAIL_MODAL} >> text=Savings Interest             visible
+    Run Keyword And Continue On Failure    Wait For Elements State    ${ACCT_TXN_DETAIL_MODAL} >> text="Savings Interest"           visible
     Run Keyword And Continue On Failure    Wait For Elements State    ${ACCT_TXN_DETAIL_MODAL} >> text=Transaction Amount           visible
     Run Keyword And Continue On Failure    Wait For Elements State    ${ACCT_TXN_DETAIL_MODAL} >> text=Service Fee                 visible
     Run Keyword And Continue On Failure    Wait For Elements State    ${ACCT_TXN_DETAIL_MODAL} >> text=0.00                        visible

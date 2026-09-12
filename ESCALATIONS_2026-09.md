@@ -139,6 +139,53 @@ the account's failed-attempt counter to 0, or a fresh unused account per run.
 ### T4 bank-name credit record — resolved (was a config note, not a blocker)
 Handled — see the t4.1.5 note under defect #4.
 
+### 9. t8.1 Interest Crediting — DESIGN MISMATCH: system credits MONTHLY, tests assume DAILY
+`t8.1` was never run in the 2026-09 regression (excluded, "pending dedicated
+interest-test accounts"). Investigated this session against live ITG data.
+
+**Key finding — interest is credited MONTHLY at ~2%, but t8.1 is written for
+DAILY interest.** t8.1's expected values use `balance × rate / 365` (e.g. ₱2.74
+for ₱50,000 @ 2%). The actual system credits **monthly** — verified rigorously
+against 4 real accounts (`balance × 2% / 12`, within balance-drift):
+
+| Account | Balance | Credited | Monthly `bal×2%/12` |
+|---------|--------:|---------:|--------------------:|
+| Jace Amban (7710373294475998)   | 273,978.19 | 455.87 | 456.63 |
+| Jello Mangune (7710338140519887)|  50,586.25 |  84.17 |  84.31 |
+| Shia (7710383355350139)         |  10,606.86 |  17.65 |  17.68 |
+| Joy Amban (7710388942877702)    |     308.51 |   0.51 |   0.51 |
+
+Credit **dates confirm the monthly cadence** (Jace: 01 Aug, 02 Jul, 01 Jul,
+02 Jun, 01 Jun). So all of t8.1's daily-computation tests (t8.1.2–.5, .9, .10,
+.13, .14) cannot match real data as written.
+
+**The interest feature itself works** — the transaction-history list and detail
+modal render correctly (Type "Savings Interest", Amount, Service Fee 0.00,
+Remarks "Savings Interest Auto Credit", Success, credit account, dates).
+
+**Other gaps found:**
+- **No 5% savings product exists** in the tenant (rates seen: 2%, 2.5%, 0%). A
+  5% product was created this session but has no accounts/interest yet. t8.1's
+  "Product B (5%)" tests need it (plus accounts + a job cycle).
+- **Scenario tests** (t8.1.9 ₱1M, t8.1.10 ₱73, t8.1.14 ₱72.99, t8.1.15 zero,
+  t8.1.16 closed, t8.1.17 0%-product) need purpose-built accounts at exact
+  balances — not producible via the standard UI flows.
+- **t8.1.1** (scheduler runs at 12 AM) is manual-verify; note the most recent
+  system-wide interest credit seen was 17 Aug (vs a monthly cadence), worth a
+  scheduler check.
+- **t8.1.6 / t8.1.7** (structural: record exists + detail renders) are the only
+  tests satisfiable with existing data today; they need minor test fixes (one
+  ambiguous `text=Savings Interest` locator fixed this session; the account
+  table also has a known intermittent empty-render).
+
+**Staged this session:** `T81_PRODUCT_B_ACCOUNT_NO` pointed at a real credited
+account (Jace Amban) so the structural tests have real data to run against.
+
+**Needs decision (test design / product owner):** reconcile t8.1 with actual
+behavior — either the savings products should credit **daily** (config change) or
+t8.1 should expect **monthly** interest. Until then t8.1's computation tests
+cannot pass.
+
 ---
 
 ## Summary of what's needed to close the run
@@ -150,3 +197,6 @@ Handled — see the t4.1.5 note under defect #4.
 3. **QA ops:** keep resetting the network rate limit between OTP/lockout batches
    (per the manual-reset workflow); and reset the disposable auth account
    (`jjavier+sa`) to `Password!1` after auth runs.
+4. **Test design / product owner:** reconcile t8.1 with actual interest behavior
+   (system credits **monthly ~2%**, tests assume **daily**); provision a 5%
+   product + exact-balance interest test accounts if daily testing is intended.
