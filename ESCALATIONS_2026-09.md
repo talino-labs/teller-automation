@@ -96,10 +96,11 @@ now green. The broken records above still need the dev fix.
 Previously `pvillados@agsx.net` authenticated but hit **"Access Restricted"** on
 the Loans area, failing all of `t7.2` + `t7.3.1`. Repointed `T72_APPROVER_*` to a
 Loans-capable account (`jjavier+sa`, distinct from the maker so Separation-of-
-Duties stays valid). **Result: t7.3 7/7, t7.2 9/10.** The one miss, `t7.2.10`
-(SOD "cannot reject own"), is a flaky **Test Setup** timeout (session/overlay
-timing in the SOD logout/login pair) — not the permission block and not a product
-defect.
+Duties stays valid). **Result: t7.3 7/7, t7.2 10/10.** `t7.2.10` (SOD "cannot
+reject own") was fixed this session — it was logging in as the *approver*
+instead of the *maker*, so the "cannot reject own" block never fired (a different
+teller rejecting an app is valid). Now logs in as the maker (default teller),
+matching its docstring and t7.2.9. Not a product defect.
 
 ### 6. Disposable auth account for t1.3 / t1.4 — ✅ RESOLVED
 `CP_USER_EMAIL` / `FP_MIXED_CASE_EMAIL` repointed from the main teller to a
