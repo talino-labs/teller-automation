@@ -85,8 +85,10 @@ t1.3.1 Reset Password via Forgot Password
     ...    Wait For Elements State     ${BACK_TO_LOGIN_BTN}        visible
     Click                       ${BACK_TO_LOGIN_BTN}
     Wait For Elements State     ${LOGIN_PAGE}               visible
-    # Verify new password works by logging in with it
-    Fill Text                   ${EMAIL_FIELD}              ${TELLER_EMAIL}
+    # Verify new password works by logging in with it — must be the SAME account
+    # that was reset (CP_USER_EMAIL), not TELLER_EMAIL. These used to be the same
+    # account so the mismatch was latent; with a dedicated auth account it fails.
+    Fill Text                   ${EMAIL_FIELD}              ${CP_USER_EMAIL}
     Fill Text                   ${PASSWORD_FIELD}           ${NEW_PASSWORD}
     Click                       ${LOGIN_BUTTON}
     Wait For Elements State     css=h3.text-2xl             visible

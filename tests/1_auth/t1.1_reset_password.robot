@@ -52,11 +52,14 @@ Navigate To Reset Password Page
     Fill Text                   ${PASSWORD_FIELD}    ${temp_password}
     Click                       ${LOGIN_BUTTON}
     Wait For Elements State     ${RTP_PAGE}    visible
+    # Remember which temp password we logged in with so the reset form re-enters
+    # the SAME one (default used to be RTP_TEMP_PASSWORD, wrong for _2 accounts).
+    Set Test Variable           ${RTP_ACTIVE_TEMP_PASSWORD}    ${temp_password}
 
 Complete Reset Password Form
     [Documentation]    Fills the Reset Password form with the temporary and new passwords, then
     ...                submits it. Leaves the user on the OTP entry screen.
-    [Arguments]        ${temp_password}=${RTP_TEMP_PASSWORD}    ${new_password}=${TELLER_PASSWORD}
+    [Arguments]        ${temp_password}=${RTP_ACTIVE_TEMP_PASSWORD}    ${new_password}=${TELLER_PASSWORD}
     Fill Text                   ${RTP_TEMP_PASSWORD_FIELD}       ${temp_password}
     Fill Text                   ${RTP_NEW_PASSWORD_FIELD}        ${new_password}
     Fill Text                   ${RTP_CONFIRM_PASSWORD_FIELD}    ${new_password}

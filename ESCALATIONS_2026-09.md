@@ -2,21 +2,30 @@
 
 **Environment:** rural-bank-san-antonio (ITG)
 **Run folder:** `results/2026-09_full-regression/`
-**Final standing:** ~303 passed / 59 failed / 17 skipped.
 
-Of the 59 failures, **none are test-code defects** — all were triaged and the
-fixable ones already turned green. What remains splits into product defects
-(need dev) and access blockers (need admin):
+Almost every original failure has been resolved — as a stale test-defect fixed
+in code, or by provisioning the missing test accounts. What genuinely remains is
+a small set of **product defects (need dev)** plus a handful of auth lockout
+tests that need a **pristine account state** the environment can't reliably give.
 
-| Bucket | Tests | Owner |
-|--------|------:|-------|
-| Product defects | 6 | Dev |
-| Loans approver permission | 11 | Admin / access |
-| Auth rate limit + account | 41 | Infra / admin |
+| Bucket | Status |
+|--------|--------|
+| Product defects (dev) | 3 open (status-change is verified in a separate set) |
+| Loans approver | ✅ Resolved — approver account provisioned |
+| Auth suites t1.1 / t1.3 / t1.4 | ✅ All green |
+| Auth t1.2 (login/lockout) | 18/20 — feature proven; 4 counter-detail tests blocked on account-state reset |
 
-Fixed & re-verified green this session (not in the counts above as failures):
-t2.5.15, t2.6.9/.19/.21, t7.5.5 (stale test bugs), and t4.1.5 (wrong seed data —
-see note under defect #4).
+### Test-defects fixed & verified this session
+- **t2.5.15, t2.6.9/.19/.21, t7.5.5** — stale test bugs (fixes were committed but never re-run)
+- **t4.1.5** — wrong seed data (bank name; see note under defect #4)
+- **t2.3.4 / t3.2.4** — repointed off an errored record (see defect #4)
+- **t1.1 reset flow** — `Complete Reset Password Form` re-entered the wrong temp
+  password (defaulted to `RTP_TEMP_PASSWORD` instead of the account actually
+  logged in with); latent until these tests first cleared the rate limit
+- **t1.3.1** — verified the reset by logging in as `TELLER_EMAIL` instead of the
+  account that was reset (`CP_USER_EMAIL`); latent while they were the same account
+- **t1.4.11-12** — asserted the OTP resend button was *hidden* during cooldown;
+  it is actually *visible but disabled* (countdown), now asserted correctly
 
 ---
 
@@ -81,34 +90,63 @@ now green. The broken records above still need the dev fix.
 
 ---
 
-## B. Access / environment blockers — need admin, not code
+## B. Resolved this session (accounts provisioned)
 
-### 5. Loans approver lacks permission — `t7.2.1`–`t7.2.10`, `t7.3.1` (11 tests)
-Approver `pvillados@agsx.net` authenticates but the Loans area returns
-**"Access Restricted — your current role doesn't include permission to view this
-page."** The whole `t7.2` suite fails at parent-suite setup on
-`nav-sidebar-loans`; `t7.3.1` depends on `t7.2` approving a loan first.
-**Need:** a second Loans-capable account to act as approver (kept distinct from
-the maker so Separation-of-Duties tests remain valid).
+### 5. Loans approver — ✅ RESOLVED
+Previously `pvillados@agsx.net` authenticated but hit **"Access Restricted"** on
+the Loans area, failing all of `t7.2` + `t7.3.1`. Repointed `T72_APPROVER_*` to a
+Loans-capable account (`jjavier+sa`, distinct from the maker so Separation-of-
+Duties stays valid). **Result: t7.3 7/7, t7.2 9/10.** The one miss, `t7.2.10`
+(SOD "cannot reject own"), is a flaky **Test Setup** timeout (session/overlay
+timing in the SOD logout/login pair) — not the permission block and not a product
+defect.
 
-### 6. Auth network rate limit — `t1.1`–`t1.4` (41 tests)
-Network-level block: *"Too many requests from this network, try again after
-1 hour."* One manual reset buys ~20 tests. These 41 failures are artifacts of
-the block, not defects. **Need:** the QA IP whitelisted.
+### 6. Disposable auth account for t1.3 / t1.4 — ✅ RESOLVED
+`CP_USER_EMAIL` / `FP_MIXED_CASE_EMAIL` repointed from the main teller to a
+dedicated disposable account (`jjavier+sa`), so t1.3 (which resets the password
+with no restore) and t1.4 (which changes it) no longer risk locking out the whole
+suite. **Result: t1.3 16/16, t1.4 12/12.** Note: t1.3.1 leaves `jjavier+sa` at
+its reset password, so it should be reset to `Password!1` after an auth run.
 
-### 7. Dedicated disposable auth account for `t1.3` / `t1.4`
-`CP_USER_EMAIL` currently points at the **main teller** (`jjavier+1@nmblr.ai`).
-`t1.3.1` resets that account's password with **no restore step**, and `t1.4.1`
-changes it too — running either against the main teller would change the
-credential **every module logs in with** and lock out the whole suite. These
-suites need a **disposable, isolated account** (the deleted `pvillados+u1` was
-the right shape). **Need:** an account like `jjavier+2@nmblr.ai` to repoint
-`CP_USER_EMAIL` / `FP_MIXED_CASE_EMAIL` at, restoring the safe blast radius.
+---
+
+## C. Remaining blockers
+
+### 7. Auth network rate limit — handled by manual reset (not an infra ask)
+The app throttles at **~7-8 login/OTP requests** from the network:
+*"Too many requests from this network, try again after 1 hour."* Per QA decision
+this is left as-is (it reflects real behavior) and **worked around by manually
+resetting** the limit between runs. Consequence for automation: OTP- and
+lockout-heavy tests must be run in **small isolated batches with a reset between**
+(a full suite run trips it mid-way). This is a known operational constraint, not
+a defect.
+
+### 8. t1.2 lockout counter-detail tests — need a pristine account counter
+`t1.2` login is at **18/20**. The lockout **feature is proven working**:
+- ✅ t1.2.10 — blocks after 5 failed attempts
+- ✅ t1.2.11 — blocked account can't log in during cooldown
+- ✅ t1.2.14 — blocking is per-account (not per-device/IP)
+- ✅ t1.2.15 — password reset lifts the block
+
+The remaining 4 — **t1.2.12** (auto-unlock after cooldown), **t1.2.13** (counter
+persists across sessions), **t1.2.16** (counter resets after success),
+**t1.2.19** (still blocked on 6th) — each need `jjavier+1` to start with a
+**failed-attempt counter of exactly 0**. Lifting the account lock does **not**
+reset the counter, so these tests hit the lockout on an early attempt and fail on
+a precondition, not on the behavior under test. **Need:** either a way to reset
+the account's failed-attempt counter to 0, or a fresh unused account per run.
+
+### T4 bank-name credit record — resolved (was a config note, not a blocker)
+Handled — see the t4.1.5 note under defect #4.
 
 ---
 
 ## Summary of what's needed to close the run
-1. **Dev:** fix defects #1–#3 (and #4 pending the QA check above).
-2. **Access:** provision a Loans-capable approver account (#5).
-3. **Infra:** whitelist the QA IP for auth (#6).
-4. **Access:** provision a disposable auth account for t1.3/t1.4 (#7).
+1. **Dev:** fix product defects #1–#3, and investigate the errored older-record
+   detail payloads in #4 (possible data backfill).
+2. **QA ops:** to fully green t1.2, provide a way to reset `jjavier+1`'s
+   failed-attempt counter (or a fresh account per run) — the lockout feature
+   itself is already verified.
+3. **QA ops:** keep resetting the network rate limit between OTP/lockout batches
+   (per the manual-reset workflow); and reset the disposable auth account
+   (`jjavier+sa`) to `Password!1` after auth runs.

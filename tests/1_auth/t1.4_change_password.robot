@@ -257,8 +257,9 @@ t1.4.11-12 Change Password – Cooldown Prevents Immediate Resend, Then Allows R
     Navigate To Change Password Page
     Complete Change Password Form
 
-    # Resend link must be hidden during active cooldown
-    Wait For Elements State     ${CP_OTP_RESEND_BTN}    hidden
+    # Resend link stays visible but DISABLED during the active cooldown (shows a
+    # countdown); it does not disappear. (Was asserting 'hidden' — stale expectation.)
+    Wait For Elements State     ${CP_OTP_RESEND_BTN}    disabled
 
     # Wait for the 60-second cooldown timer to finish
     Sleep                       61s
