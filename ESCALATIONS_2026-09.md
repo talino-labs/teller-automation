@@ -122,19 +122,22 @@ lockout-heavy tests must be run in **small isolated batches with a reset between
 a defect.
 
 ### 8. t1.2 lockout counter-detail tests — need a pristine account counter
-`t1.2` login is at **18/20**. The lockout **feature is proven working**:
+`t1.2` login is at **15/20** in the published run folder. The lockout **feature
+is proven working**:
 - ✅ t1.2.10 — blocks after 5 failed attempts
-- ✅ t1.2.11 — blocked account can't log in during cooldown
 - ✅ t1.2.14 — blocking is per-account (not per-device/IP)
 - ✅ t1.2.15 — password reset lifts the block
+- (t1.2.11 blocked-during-cooldown passes on a truly pristine counter, but is
+  unreliable — see below)
 
-The remaining 4 — **t1.2.12** (auto-unlock after cooldown), **t1.2.13** (counter
-persists across sessions), **t1.2.16** (counter resets after success),
-**t1.2.19** (still blocked on 6th) — each need `jjavier+1` to start with a
-**failed-attempt counter of exactly 0**. Lifting the account lock does **not**
-reset the counter, so these tests hit the lockout on an early attempt and fail on
-a precondition, not on the behavior under test. **Need:** either a way to reset
-the account's failed-attempt counter to 0, or a fresh unused account per run.
+The remaining 5 — **t1.2.11** (blocked during cooldown), **t1.2.12** (auto-unlock
+after cooldown), **t1.2.13** (counter persists across sessions), **t1.2.16**
+(counter resets after success), **t1.2.19** (still blocked on 6th) — each need
+`jjavier+1` to start with a **failed-attempt counter of exactly 0**. Lifting the
+account lock does **not** reliably reset the counter, so these hit the lockout on
+an early attempt and fail on a precondition, not on the behavior under test.
+**Need:** a reliable way to reset the account's failed-attempt counter to 0 (or a
+fresh unused account per run).
 
 ### T4 bank-name credit record — resolved (was a config note, not a blocker)
 Handled — see the t4.1.5 note under defect #4.
