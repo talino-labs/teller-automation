@@ -54,14 +54,20 @@ Navigate To Avail Loan Product Page
     Fill Text                    ${PRODUCT_SEARCH_INPUT}    ${T26_LOANS_PRODUCT}
     Click                        ${PRODUCT_SEARCH_BTN}
     Wait For Load Spinner To Disappear
-    # Prefer the 2nd match (nth=1) when a duplicate-named product exists — e.g. San Antonio
-    # has two "Regular Home Loan"s and the 2nd carries the custom field the tests verify.
-    # Fall back to the single match (nth=0) when there's only one eligible product with that
-    # name — e.g. SNR-SIT's single custom-field "Loan 0722160721".
-    ${match_count}=    Get Element Count    css=.ant-table-body tr:has-text("${T26_LOANS_PRODUCT}")
-    ${idx}=            Set Variable If    ${match_count} > 1    1    0
-    Wait For Elements State      css=.ant-table-body tr:has-text("${T26_LOANS_PRODUCT}") >> nth=${idx}    visible    timeout=10s
-    Click                        css=.ant-table-body tr:has-text("${T26_LOANS_PRODUCT}") >> nth=${idx} >> ${AVAIL_PRODUCT_BTN}
+    # San Antonio has two "Regular Home Loan"s; only one carries the custom fields the tests verify
+    # (including the numeric field t2.6.20 needs). Select it by its distinguishing description
+    # ${T26_LOANS_PRODUCT_VARIANT} rather than by list position — the eligible list is ordered by
+    # last-updated, so an nth index breaks whenever a product is edited. Fall back to the single
+    # match when only one product with that name exists (e.g. SNR-SIT's "Loan 0722160721").
+    ${variant_count}=    Get Element Count
+    ...    css=.ant-table-body tr:has-text("${T26_LOANS_PRODUCT}"):has-text("${T26_LOANS_PRODUCT_VARIANT}")
+    IF    ${variant_count} > 0
+        ${row}=    Set Variable    css=.ant-table-body tr:has-text("${T26_LOANS_PRODUCT}"):has-text("${T26_LOANS_PRODUCT_VARIANT}")
+    ELSE
+        ${row}=    Set Variable    css=.ant-table-body tr:has-text("${T26_LOANS_PRODUCT}")
+    END
+    Wait For Elements State      ${row} >> nth=0    visible    timeout=10s
+    Click                        ${row} >> nth=0 >> ${AVAIL_PRODUCT_BTN}
     Wait For Elements State      ${AVAIL_PRODUCT_PAGE}    visible
     Wait For Load Spinner To Disappear
 
@@ -75,6 +81,16 @@ Fill Loan Details
     Click                        ${AVAIL_LOAN_DISBURSEMENT_SELECT}
     Wait For Elements State      css=.ant-select-dropdown .ant-select-item-option:has-text("${T26_DISBURSEMENT_MODE}")    visible
     Click                        css=.ant-select-dropdown .ant-select-item-option:has-text("${T26_DISBURSEMENT_MODE}")
+    # Fill the numeric custom field with a valid value when present, so Continue enables. It
+    # behaves as required (an empty/invalid value keeps Continue disabled — the behaviour t2.6.20
+    # asserts). Guarded so it's a no-op on banks/products without this custom field.
+    ${has_numeric_custom}=    Run Keyword And Return Status
+    ...    Wait For Elements State
+    ...    css=[data-testid="page-customers-avail-product"] input.ant-input-number-input[placeholder="${T26_LOANS_NUMERIC_FIELD_PLACEHOLDER}"]    visible    timeout=2s
+    IF    ${has_numeric_custom}
+        Fill Text
+        ...    css=[data-testid="page-customers-avail-product"] input.ant-input-number-input[placeholder="${T26_LOANS_NUMERIC_FIELD_PLACEHOLDER}"]    1000
+    END
 
 Fill Employer Name
     [Documentation]    Fills the loan product's custom text field. The custom field NAME varies
@@ -83,8 +99,10 @@ Fill Employer Name
     ...                hardcoded name. Fills every such custom input with ${value} so
     ...                the downstream value checks still work.
     [Arguments]    ${value}=${T26_EMPLOYER_NAME}
+    # Text custom fields only — exclude number custom fields (.ant-input-number-input), which
+    # reject text input. Numeric custom fields are handled in Fill Loan Details.
     ${custom}=    Set Variable
-    ...    css=[data-field]:not([data-field="loanAmount"]):not([data-field="interestRate"]):not([data-field="termLength"]):not([data-field="disbursementMode"]) input
+    ...    css=[data-field]:not([data-field="loanAmount"]):not([data-field="interestRate"]):not([data-field="termLength"]):not([data-field="disbursementMode"]) input:not(.ant-input-number-input)
     Wait For Elements State      ${custom} >> nth=0    visible    timeout=10s
     ${count}=    Get Element Count    ${custom}
     FOR    ${i}    IN RANGE    ${count}
@@ -718,23 +736,30 @@ t2.6.20 Enter Invalid Data Format in Custom Fields – Loans Availment
     Navigate To Avail Loan Product Page
     Fill Loan Details
 
+    # Target the CUSTOM numeric field specifically by its placeholder. The old locator
+    # (.ant-input-number-input:not([data-field-input])) also matched the standard loan number
+    # fields (Loan amount / Interest rate / Term), so it could never isolate the custom field and
+    # always skipped. The custom "Number input" field is identified by its unique placeholder.
+    ${custom_numeric}=    Set Variable
+    ...    css=[data-testid="page-customers-avail-product"] input.ant-input-number-input[placeholder="${T26_LOANS_NUMERIC_FIELD_PLACEHOLDER}"]
     ${numeric_input}=    Run Keyword And Return Status
-    ...    Wait For Elements State
-    ...    css=[data-testid="page-customers-avail-product"] .ant-input-number-input:not([data-field-input])    visible    timeout=3s
+    ...    Wait For Elements State    ${custom_numeric}    visible    timeout=5s
 
     IF    ${numeric_input}
-        Fill Text
-        ...    css=[data-testid="page-customers-avail-product"] .ant-input-number-input    abcdef
-        Click    ${AVAIL_PRODUCT_PAGE} >> text=Customer Details
-        ${field_value}=    Get Property
-        ...    css=[data-testid="page-customers-avail-product"] .ant-input-number-input    value
+        # Fill Loan Details pre-fills this field with a valid value (so other tests' Continue
+        # enables); clear it first so the rejection of alphabetic input is observed from empty.
+        Clear Text    ${custom_numeric}
+        Fill Text    ${custom_numeric}    abcdef
+        # Blur the field so the numeric input applies its on-blur rejection of non-numeric input.
+        Click        ${AVAIL_PRODUCT_PAGE} >> text=Customer Details
+        ${field_value}=    Get Property    ${custom_numeric}    value
         Run Keyword And Continue On Failure
         ...    Should Be Empty    ${field_value}
         ...    msg=Invalid characters were not rejected on blur — field contains: '${field_value}'
         Run Keyword And Continue On Failure
         ...    Wait For Elements State    ${AVAIL_PRODUCT_CONTINUE_BTN}    disabled
     ELSE
-        Skip    No numeric custom field found on ${T26_LOANS_PRODUCT} — test requires a product with a numeric field
+        Skip    No numeric custom field (placeholder "${T26_LOANS_NUMERIC_FIELD_PLACEHOLDER}") found on ${T26_LOANS_PRODUCT}
     END
 
 

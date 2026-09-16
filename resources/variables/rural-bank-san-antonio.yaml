@@ -342,6 +342,12 @@ T71_REJECTED_LOAN_SEARCH: "Jace Amban"
 T26_CUSTOMER_ID: "f3c32b8d4d4f47d89de0701590c018df"
 T26_CUSTOMER_NAME: "Warren Giltendez"
 T26_LOANS_PRODUCT: "Regular Home Loan"
+# Distinguishes the custom-field "Regular Home Loan" (there are two; this one carries the
+# custom fields — incl. the numeric "Monthly Savings Amount" field t2.6.20 exercises).
+T26_LOANS_PRODUCT_VARIANT: "premium offer"
+# Placeholder of the numeric ("Number input") custom field on that product — used by t2.6.20
+# to target the custom field (not the standard loan number fields).
+T26_LOANS_NUMERIC_FIELD_PLACEHOLDER: "Enter amount"
 T26_LOAN_AMOUNT: "10000.00"
 T26_INTEREST_RATE: "2.00"
 T26_LOAN_TERM_LENGTH: "10"
