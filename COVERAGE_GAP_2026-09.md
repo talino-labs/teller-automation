@@ -17,19 +17,26 @@ Cross-check of the master test-case catalog (`ITG Full Regression Testing - Sept
 
 > There are **no automatable gaps** in the current build. The only module with no suite — **t3.3 Create New Bank Account** — is **not yet deployed on ITG** (verified 16 Sep 2026, see Section E), so it cannot be automated or executed yet. Everything else is covered by the September automated run, needs manual execution (Section A), or is a numbering/stale artifact (Section B).
 
-## A. 🟡 Needs manual September execution
+## A. 🟡 Section-A cases — now executed (see `SECTION_A_RESULTS_2026-09.md`)
 
-Inherently manual (OTP-session blocking, 5-min session/OTP timeouts, or no automated suite). Not covered by the September automated run — must be run manually and recorded.
+These were the "not in the automated run" cases. Status after the Section-A effort:
 
-| Module | Test cases | Note |
-|--------|-----------|------|
-| t1.1 Reset Password (First-Time Login) | t1.1.1 t1.1.21 t1.1.22 t1.1.23 t1.1.24 t1.1.25 t1.1.26 | incl. t1.1.1 reset-link + t1.1.21–26 OTP-session blocking |
-| t1.3 Forgot Password | t1.3.21 t1.3.22 t1.3.23 t1.3.24 t1.3.25 t1.3.26 | t1.3.21–26 OTP-session blocking |
-| t1.4 Change Password | t1.4.17 t1.4.18 t1.4.19 t1.4.20 t1.4.21 t1.4.22 | t1.4.17–22 OTP-session/blocking |
-| t2.5 Avail Savings Product | t2.5.19 | t2.5.19 |
-| t5.3 Create New Product | t5.3.36 | t5.3.36 |
+| Module | Test cases | Status |
+|--------|-----------|--------|
+| t1.1 Reset Password | t1.1.21 .22 .23 .25 | ✅ executed manually (PASS) — OTP-session 60-min block matrix |
+| t1.1 Reset Password | t1.1.1 · t1.1.24 · t1.1.26 | 🕒 human-manual (email-link needs inbox; .24/.26 need real 60-min/15-min waits) |
+| t1.3 Forgot Password | t1.3.21 .22 .23 .25 | ✅ executed manually (PASS) |
+| t1.3 Forgot Password | t1.3.24 · t1.3.26 | 🕒 human-manual (60-min / 15-min waits) |
+| t1.4 Change Password | t1.4.17 .18 .19 .21 | ✅ executed manually (PASS) |
+| t1.4 Change Password | t1.4.20 · t1.4.22 | 🕒 human-manual (60-min / 15-min waits) |
+| t2.5 Avail Savings Product | t2.5.19 | ✅ **now automated** (session-timeout; `slow` tag) |
+| t5.3 Create New Product | t5.3.36 | ✅ **now automated** (version→Deprecated; idempotent/reusable) |
 
-> **t3.3 Create New Bank Account** was removed from this "manual execution" list — it is **blocked**, not manually runnable yet. See Section E.
+The OTP-session 60-min block feature is proven identically across all three password flows.
+Only the 6 wall-clock cases (`.24`/`.26` per flow) plus t1.1.1's email-link entry remain
+human-manual — nothing there is an automation gap the app allows us to close.
+
+> **t3.3 Create New Bank Account** is **blocked**, not manually runnable yet. See Section E.
 
 ## B. 🟢 "Dropped" — verified as covered/stale (numbering mismatch, NOT gaps)
 

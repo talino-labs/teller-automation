@@ -8,7 +8,7 @@ Manual execution of the "needs manual September execution" cases from
 | TC | Title | Result | Method |
 |----|-------|--------|--------|
 | t2.5.19 | Session Timeout During Savings Availment Flow | ✅ PASS | Automated (implemented; was a `Skip`) |
-| t5.3.36 | Savings Product Version Update Creates Deprecated Version | ✅ PASS | Manual UI (16 Sep 2026) — automation to follow |
+| t5.3.36 | Savings Product Version Update Creates Deprecated Version | ✅ PASS | Automated (implemented; idempotent/reusable) |
 | t1.1.1  | Reset Password via "Reset Password Now" link | 🟡 PARTIAL | Flow verified by equivalence; email-link step needs inbox |
 | t1.3.21 | Forgot Password — 60-min block after 3 unverified sessions (5 invalid attempts) | ✅ PASS | Manual, magic OTP `999999` |
 | t1.3.23 | Forgot Password — blocked email keeps returning error during block | ✅ PASS | Manual |
@@ -158,8 +158,15 @@ Matches all expected results: (1) held version → Deprecated ✅, (2) old versi
 longer in the active/marketplace list (only `_001` active) ✅, (3) existing customer
 can still view their Deprecated product ✅.
 
-> Note: this permanently created version `_001` of Savings 0602041715 on ITG (by
-> design — that is the feature under test). John Deep's `_000` remains at 2.50%.
+**Now automated** as `t5.3.36` in `tests/5_products/t5.3_create_new_product.robot`
+(reusable across cycles — see the note below). Verified **PASS twice back-to-back**
+to confirm idempotency. New reusable keywords: `Open Active Product Edit Page`,
+`Update Product Interest Rate To Force New Version` (products), and
+`Verify Customer Availed Product Is Deprecated` (customers).
+
+> Note: each run permanently creates a new version of Savings 0602041715 on ITG (by
+> design — that is the feature under test). The interest rate is toggled between
+> `T536_INTEREST_RATE_A`/`_B` so the product stays sane and every run makes a real change.
 
 ### t1.1.1 — Reset Password via "Reset Password Now" link 🟡 PARTIAL
 The temp-password → new-password → OTP reset flow was exercised end-to-end this
