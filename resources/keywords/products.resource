@@ -71,3 +71,35 @@ Find Active Product Row
         Click    ${PRODUCTS_PAGINATION_NEXT}
         Wait For Load Spinner To Disappear
     END
+
+Open Active Product Edit Page
+    [Documentation]    Locates an active product by name (paging through all pages) and opens its
+    ...                Edit Product page via the row-level edit action. Reusable across cycles —
+    ...                does not assume the product is on any particular page.
+    [Arguments]        ${product_name}
+    Find Active Product Row    ${product_name}
+    Click    css=[data-testid="table-products-active"] tr:has-text("${product_name}") >> ${EDIT_PRODUCT_BTN} >> nth=0
+    Wait For Load Spinner To Disappear
+    Wait For Elements State    ${EDIT_PRODUCT_PAGE}    visible
+
+Update Product Interest Rate To Force New Version
+    [Documentation]    On the Edit Product page, changes the Interest rate to force a real edit
+    ...                (which triggers a product version update). Toggles between two values so the
+    ...                test is idempotent across cycles: it fills ${rate_a}, and if that produces no
+    ...                change (Save stays disabled because the product already had that rate) it
+    ...                fills ${rate_b} instead. Saves and waits for the return to the Products list.
+    ...                Returns the rate that was applied.
+    [Arguments]        ${rate_a}    ${rate_b}
+    Fill Text    ${CP_INTEREST_RATE_INPUT}    ${rate_a}
+    ${applied}=    Set Variable    ${rate_a}
+    ${enabled}=    Run Keyword And Return Status
+    ...    Wait For Elements State    ${EDIT_PRODUCT_SAVE_BTN}    enabled    timeout=3s
+    IF    not ${enabled}
+        Fill Text    ${CP_INTEREST_RATE_INPUT}    ${rate_b}
+        ${applied}=    Set Variable    ${rate_b}
+        Wait For Elements State    ${EDIT_PRODUCT_SAVE_BTN}    enabled    timeout=5s
+    END
+    Click    ${EDIT_PRODUCT_SAVE_BTN}
+    Wait For Load Spinner To Disappear
+    Wait For Elements State    ${PRODUCTS_LIST_PAGE}    visible    timeout=15s
+    RETURN    ${applied}

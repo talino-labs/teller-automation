@@ -23,12 +23,12 @@ TIMEOUT: "30s"
 # Auth — Reset Password via Temp Password (t1.1)
 # ============================================================
 
-RTP_NEW_USER_EMAIL: "jjavier+temp5@nmblr.ai" #fresh account for t1.1.16 (completes a reset, consumes it)
-RTP_TEMP_PASSWORD: "ecAsNlrzBdBux-o-sit1FVNeMDiMMJsWAa1!" #fresh account for t1.1.16
-RTP_NEW_USER_EMAIL_2: "jjavier+temp5@nmblr.ai" #fresh account for t1.1.16 (which completes a reset, consuming it)
-RTP_TEMP_PASSWORD_2: "ecAsNlrzBdBux-o-sit1FVNeMDiMMJsWAa1!" #fresh account for t1.1.16
-RTP_MIXED_CASE_EMAIL: "Jjavier+temp6@NmBlR.aI" #mixed-case of temp6 for t1.1.3 (consumes it)
-RTP_MIXED_CASE_EMAIL_PASSWORD: "yxMy-c8w_45Cipj45tdjkSONZoszUKJtAa1!" #temp6 temp pw for t1.1.3
+RTP_NEW_USER_EMAIL: "jjavier+temp10@nmblr.ai" #fresh account for t1.1.16 (completes a reset, consumes it)
+RTP_TEMP_PASSWORD: "i2leFVF6hovRk9K9vCPlXK31Dwy6BBGKAa1!" #fresh account for t1.1.16
+RTP_NEW_USER_EMAIL_2: "jjavier+temp9@nmblr.ai" #for t1.1.18 (was temp8 for .13/.14/.15)
+RTP_TEMP_PASSWORD_2: "WgIn_OJoxYOfHrkLt3V6UFAwAPbzS6KzAa1!" #for t1.1.18
+RTP_MIXED_CASE_EMAIL: "Jjavier+temp11@NmBlR.aI" #mixed-case of temp11 for t1.1.3 (consumes it)
+RTP_MIXED_CASE_EMAIL_PASSWORD: "7cnQ19BDVGcNT89Q5iKhaAvADcHo1mJsAa1!" #temp11 temp pw for t1.1.3
 RTP_EXPIRED_USER_EMAIL: "pvillados+feb3@agsx.net"
 EXPIRED_TEMP_PASSWORD: "g9EUrGq0ttVQ"
 RTP_WRONG_CONFIRM_PASSWORD: "Password1234!"
@@ -262,6 +262,18 @@ T53_LOANS_PENALTY_CONDITIONS: "Applied after 30 days overdue"
 T53_LOANS_SECTION_NAME: "Employment Information"
 T53_LOANS_FIELD_NAME: "Employer Name"
 T53_LOANS_FIELD_PLACEHOLDER: "Enter employer name"
+
+# ---------------------------------------------------------------
+# t5.3.36 — Product version update creates a Deprecated version
+# An existing savings product that is currently held by T536_CUSTOMER.
+# The test toggles this product's interest rate to force a version bump,
+# then verifies the customer's held (older) version shows "Deprecated".
+# ---------------------------------------------------------------
+T536_PRODUCT_NAME: "Savings 0602041715"
+T536_CUSTOMER_ID: "a11c5d77c5184a8692d36545eb19dbd6"
+# Two interest-rate values the test toggles between (any real change forces a new version).
+T536_INTEREST_RATE_A: "2.50"
+T536_INTEREST_RATE_B: "3.00"
 
 
 # ---------------------------------------------------------------

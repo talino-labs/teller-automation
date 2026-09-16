@@ -341,3 +341,24 @@ Select Date Range From AntD Picker
         Click    css=.ant-picker-dropdown:not(.ant-picker-dropdown-hidden) .ant-picker-panel:last-of-type .ant-picker-cell-in-view:not(.ant-picker-cell-disabled) .ant-picker-cell-inner:text-is("${day_to}")
     END
     Sleep    0.3s
+
+Verify Customer Availed Product Is Deprecated
+    [Documentation]    Opens the given customer's profile, switches to the Products Availed tab,
+    ...                opens the See Details drawer for the named product, and asserts the held
+    ...                version's status is "Deprecated". Reusable across cycles: a customer keeps
+    ...                the exact product version they availed, so once a newer version exists their
+    ...                held version stays Deprecated.
+    [Arguments]        ${customer_id}    ${product_name}
+    Navigate To Customers
+    View Customer Profile    ${customer_id}
+    Click    ${PRODUCTS_AVAILED_TAB}
+    Wait For Load Spinner To Disappear
+    Wait For Elements State
+    ...    css=[data-testid="table-customers-availed-products"] tr:has-text("${product_name}") >> nth=0
+    ...    visible    timeout=10s
+    Click
+    ...    css=[data-testid="table-customers-availed-products"] tr:has-text("${product_name}") >> ${SEE_DETAILS_BTN} >> nth=0
+    Wait For Elements State    ${AVAILED_PRODUCT_DRAWER}    visible
+    Wait For Elements State    ${AVAILED_PRODUCT_DRAWER} >> text=Deprecated    visible    timeout=10s
+    Click    ${PRODUCT_DETAILS_CLOSE_BTN}
+    Wait For Elements State    ${AVAILED_PRODUCT_DRAWER}    hidden    timeout=5s

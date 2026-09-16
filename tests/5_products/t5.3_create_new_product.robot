@@ -1598,3 +1598,26 @@ t5.3.35 Continue Button Disabled When Loans Custom Section Has No Fields
     # Verify Continue remains disabled when the custom section is empty
     Run Keyword And Continue On Failure
     ...    Wait For Elements State    ${CREATE_PRODUCT_CONTINUE_BTN}    disabled
+
+t5.3.36 Savings Product Version Update Creates Deprecated Version
+    [Documentation]    Verify that modifying a core configuration (Interest rate) of an existing
+    ...                Savings product held by a customer triggers a product version update: the
+    ...                customer's previously-held version transitions to "Deprecated" and remains
+    ...                viewable in their Products Availed tab (existing holders keep their version).
+    ...
+    ...                Reusable across cycles: the interest rate is toggled between two values so
+    ...                every run makes a real change (forcing a new version), and a holder always
+    ...                retains an older — therefore Deprecated — version, so the assertion stays
+    ...                valid on repeat runs.
+    ...
+    ...                Preconditions:
+    ...                1. Teller/admin is logged in with product-edit permission.
+    ...                2. ${T536_PRODUCT_NAME} is an active Savings product held by ${T536_CUSTOMER_ID}.
+    [Tags]    products    edit    regression    type2
+    # Force a version update by changing the product's interest rate.
+    Open Active Product Edit Page    ${T536_PRODUCT_NAME}
+    ${applied}=    Update Product Interest Rate To Force New Version
+    ...    ${T536_INTEREST_RATE_A}    ${T536_INTEREST_RATE_B}
+    Log    Applied interest rate ${applied}% to ${T536_PRODUCT_NAME}; a new product version was created.
+    # The customer's held (older) version must now be Deprecated and still viewable.
+    Verify Customer Availed Product Is Deprecated    ${T536_CUSTOMER_ID}    ${T536_PRODUCT_NAME}
