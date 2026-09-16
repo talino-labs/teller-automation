@@ -16,8 +16,30 @@ Manual execution of the "needs manual September execution" cases from
 | t1.3.25 | Forgot Password — valid OTP on 5th attempt → not blocked | ⛔ NEEDS ACCT | Needs a fresh expendable email |
 | t1.3.24 | Forgot Password — reset works after 60-min block expiry | 🕒 HUMAN-MANUAL | Real 60-min wait |
 | t1.3.26 | Forgot Password — 3 sessions spanning >15 min → no block | 🕒 HUMAN-MANUAL | Real 15-min staged waits |
-| t1.1.21–26 | Reset Password — OTP-session 60-min block set | ⏳ PENDING | Needs first-time-login temp accounts |
+| t1.1.21 | Reset Password — 60-min block after 3 unverified sessions | ✅ PASS | Manual, magic OTP `999999` (`jjavier+i1`) |
+| t1.1.23 | Reset Password — blocked email keeps returning error | ✅ PASS | Manual (timer 59→58) |
+| t1.1.22 | Reset Password — block via abandoned sessions | ⛔ NEEDS ACCT | Fresh temp account |
+| t1.1.25 | Reset Password — valid OTP on 5th attempt → not blocked | ⛔ NEEDS ACCT | Fresh temp account |
+| t1.1.24 | Reset Password — reset works after 60-min block expiry | 🕒 HUMAN-MANUAL | Real 60-min wait |
+| t1.1.26 | Reset Password — 3 sessions spanning >15 min → no block | 🕒 HUMAN-MANUAL | Real 15-min staged waits |
 | t1.4.17–22 | Change Password — OTP-session 60-min block set | ⏳ PENDING | Needs logged-in expendable account |
+
+### Reset Password 60-min block set (t1.1.21–26) — observed behavior
+
+Executed live using first-time-login temp account `jjavier+i1@nmblr.ai` + magic OTP
+`999999`. The Reset-Password flow keeps the user on the reset form between failed
+sessions (no re-login needed):
+
+- **t1.1.21 ✅ PASS** — 3 reset sessions, each `999999` → *"Verification Failed —
+  maximum number of attempts."* On **session #4** (RESET PASSWORD) the email was
+  blocked: **"You have exceeded the maximum number of attempts. You can try again in
+  59 minutes."** — user remains on the Reset Password page (expected #4 ✅). Security
+  Notice email (expected #5) unverifiable (no inbox).
+- **t1.1.23 ✅ PASS** — retrying RESET PASSWORD during the block → same error, timer
+  **59 → 58 minutes** (expected #3 ✅).
+
+> Confirms the block uses the **same backend** as Forgot Password (t1.3) — identical
+> modal text and timer behavior across both flows.
 
 ### Forgot Password 60-min block set (t1.3.21–26) — observed behavior
 
