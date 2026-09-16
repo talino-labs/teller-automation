@@ -12,8 +12,8 @@ Manual execution of the "needs manual September execution" cases from
 | t1.1.1  | Reset Password via "Reset Password Now" link | 🟡 PARTIAL | Flow verified by equivalence; email-link step needs inbox |
 | t1.3.21 | Forgot Password — 60-min block after 3 unverified sessions (5 invalid attempts) | ✅ PASS | Manual, magic OTP `999999` |
 | t1.3.23 | Forgot Password — blocked email keeps returning error during block | ✅ PASS | Manual |
-| t1.3.22 | Forgot Password — block via abandoned sessions | ⛔ NEEDS ACCT | Needs a fresh expendable email |
-| t1.3.25 | Forgot Password — valid OTP on 5th attempt → not blocked | ⛔ NEEDS ACCT | Needs a fresh expendable email |
+| t1.3.22 | Forgot Password — block via abandoned sessions | ✅ PASS | Manual (`jjavier+temp2`) |
+| t1.3.25 | Forgot Password — valid OTP on 5th attempt → not blocked | ✅ PASS | Manual (`jjavier+temp2`) |
 | t1.3.24 | Forgot Password — reset works after 60-min block expiry | 🕒 HUMAN-MANUAL | Real 60-min wait |
 | t1.3.26 | Forgot Password — 3 sessions spanning >15 min → no block | 🕒 HUMAN-MANUAL | Real 15-min staged waits |
 | t1.1.21 | Reset Password — 60-min block after 3 unverified sessions | ✅ PASS | Manual, magic OTP `999999` (`jjavier+i1`) |
@@ -24,12 +24,12 @@ Manual execution of the "needs manual September execution" cases from
 | t1.1.26 | Reset Password — 3 sessions spanning >15 min → no block | 🕒 HUMAN-MANUAL | Real 15-min staged waits |
 | t1.4.17 | Change Password — 60-min block after 3 unverified sessions | ✅ PASS | Manual (`jjavier+cg1`, logged in) |
 | t1.4.19 | Change Password — blocked email keeps returning error | ✅ PASS | Manual (timer 59→58) |
-| t1.4.18 | Change Password — block via abandoned sessions | ⛔ NEEDS ACCT | Fresh logged-in expendable account |
-| t1.4.21 | Change Password — valid OTP on 5th attempt → not blocked | ⛔ NEEDS ACCT | Fresh logged-in expendable account |
+| t1.4.18 | Change Password — block via abandoned sessions | ✅ PASS | Manual (`jjavier+temp4`) |
+| t1.4.21 | Change Password — valid OTP on 5th attempt → not blocked | ✅ PASS | Manual (`jjavier+temp4`) |
 | t1.4.20 | Change Password — reset works after 60-min block expiry | 🕒 HUMAN-MANUAL | Real 60-min wait |
 | t1.4.22 | Change Password — 3 sessions spanning >15 min → no block | 🕒 HUMAN-MANUAL | Real 15-min staged waits |
-| t1.3.22 | Forgot Password — block via abandoned sessions | ⛔ NEEDS ACCT | Fresh expendable email |
-| t1.3.25 | Forgot Password — valid OTP on 5th attempt → not blocked | ⛔ NEEDS ACCT | Fresh expendable email |
+| t1.3.22 | Forgot Password — block via abandoned sessions | ✅ PASS | Manual (`jjavier+temp2`) |
+| t1.3.25 | Forgot Password — valid OTP on 5th attempt → not blocked | ✅ PASS | Manual (`jjavier+temp2`) |
 
 ### Change Password 60-min block set (t1.4.17–22) — observed behavior
 
@@ -43,10 +43,46 @@ current + new + re-enter → Continue → OTP → verify. Magic OTP `999999`:
   59 minutes."** — user remains on the Change Password page (expected #4 ✅).
 - **t1.4.19 ✅ PASS** — retrying Continue during the block → same error, timer
   **59 → 58 minutes** (expected #3 ✅).
+- **t1.4.21 ✅ PASS** (`jjavier+temp4`) — 2 unverified sessions (`999999`), then session #3:
+  4 invalid (`000000`) + **valid `123456` on the 5th attempt** → *"Password has been
+  changed successfully."* No block — expected ✅.
+- **t1.4.18 ✅ PASS** (`jjavier+temp4`) — 3 **abandoned** sessions (reach OTP, click the
+  ← back arrow to leave). On the session #4 Continue the email was blocked:
+  **"You have exceeded the maximum number of attempts. You can try again in 59 minutes."**
+  — user stays on the Change Password page (expected #4 ✅).
 
 > **All three flows (Reset t1.1, Forgot t1.3, Change t1.4) confirmed to share the
 > identical OTP-session-block backend** — same modal wording, same 60-min timer,
-> same behavior for both the max-attempts (`999999`) and abandoned-session triggers.
+> same behavior for the max-attempts (`999999`), abandoned-session, and valid-on-5th
+> paths. The full block set passes on every flow except the two wall-clock cases
+> (`.24`/`.26` per flow → `.20`/`.22` for Change), which remain human-manual.
+
+### Forgot Password — remaining cases (t1.3.22 / t1.3.25)
+
+Completed with `jjavier+temp2` (magic OTP):
+
+- **t1.3.25 ✅ PASS** — 2 unverified sessions (`999999`), then session #3: 4 invalid
+  (`000000`) + **valid `123456` on the 5th attempt** → advanced to the **"Create new
+  password"** screen and completed → *"Password has been changed successfully."* No
+  block — expected ✅.
+- **t1.3.22 ✅ PASS** — 3 **abandoned** sessions (reach OTP, click "Log in" → *"Are you
+  sure you want to exit?"* → Confirm). On the session #4 Send the email was blocked:
+  **"You have exceeded the maximum number of attempts. You can try again in 59 minutes."**
+  — user stays on the Forgot Password page (expected #4 ✅).
+
+## Final status
+
+**All machine-runnable Section-A cases pass (14):** t2.5.19, t5.3.36, and the full
+OTP-session-block matrix across all three flows — Reset (t1.1.21/.22/.23/.25), Forgot
+(t1.3.21/.22/.23/.25), Change (t1.4.17/.18/.19/.21).
+
+**Only human-manual remainders** (real wall-clock waits, no account/app blocker):
+t1.1.24 / t1.1.26 / t1.3.24 / t1.3.26 / t1.4.20 / t1.4.22 — the 60-min-block-expiry and
+>15-min-window cases. Plus **t1.1.1** email-link entry (needs inbox), already verified
+by equivalence otherwise.
+
+**Accounts consumed** (all throwaway, left blocked ~60 min and/or password-reset):
+`i1`, `jc1`, `cg1`→Password!1, `temp4`→Password!2, `temp2`→Password!2.
 
 ### Reset Password 60-min block set (t1.1.21–26) — observed behavior
 
