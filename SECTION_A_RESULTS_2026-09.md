@@ -18,8 +18,8 @@ Manual execution of the "needs manual September execution" cases from
 | t1.3.26 | Forgot Password — 3 sessions spanning >15 min → no block | 🕒 HUMAN-MANUAL | Real 15-min staged waits |
 | t1.1.21 | Reset Password — 60-min block after 3 unverified sessions | ✅ PASS | Manual, magic OTP `999999` (`jjavier+i1`) |
 | t1.1.23 | Reset Password — blocked email keeps returning error | ✅ PASS | Manual (timer 59→58) |
-| t1.1.22 | Reset Password — block via abandoned sessions | ⛔ NEEDS ACCT | Fresh temp account |
-| t1.1.25 | Reset Password — valid OTP on 5th attempt → not blocked | ⛔ NEEDS ACCT | Fresh temp account |
+| t1.1.22 | Reset Password — block via abandoned sessions | ✅ PASS | Manual (`jjavier+jc1`) |
+| t1.1.25 | Reset Password — valid OTP on 5th attempt → not blocked | ✅ PASS | Manual (`jjavier+cg1`) |
 | t1.1.24 | Reset Password — reset works after 60-min block expiry | 🕒 HUMAN-MANUAL | Real 60-min wait |
 | t1.1.26 | Reset Password — 3 sessions spanning >15 min → no block | 🕒 HUMAN-MANUAL | Real 15-min staged waits |
 | t1.4.17–22 | Change Password — OTP-session 60-min block set | ⏳ PENDING | Needs logged-in expendable account |
@@ -37,9 +37,23 @@ sessions (no re-login needed):
   Notice email (expected #5) unverifiable (no inbox).
 - **t1.1.23 ✅ PASS** — retrying RESET PASSWORD during the block → same error, timer
   **59 → 58 minutes** (expected #3 ✅).
+- **t1.1.22 ✅ PASS** (`jjavier+jc1`) — 3 **abandoned** sessions (reach OTP screen, click
+  "Log in" → *"Are you sure you want to exit? All data will be lost"* → Confirm). On the
+  session #4 login attempt the email was blocked: **"You have exceeded the maximum number
+  of attempts. You can try again in 59 minutes."** — user stays on the Login page
+  (expected #4 ✅). Confirms **abandonment** counts as an unverified session, same as
+  max-attempts.
+- **t1.1.25 ✅ PASS** (`jjavier+cg1`) — 2 unverified sessions (`999999`), then session #3:
+  4 invalid attempts (`000000`) followed by the **valid OTP `123456` on the 5th attempt**
+  → **"Success! Password has been changed successfully."** No block (only 2 unverified
+  sessions in the window) — expected ✅. Proves the counter allows a valid 5th attempt
+  and does not over-block.
 
 > Confirms the block uses the **same backend** as Forgot Password (t1.3) — identical
-> modal text and timer behavior across both flows.
+> modal text and timer behavior across both flows. The full t1.1 block set passes except
+> the two wall-clock cases (t1.1.24 / t1.1.26), which stay human-manual.
+> Note: no network rate limit was hit across the entire t1.1 run (the reset flow reuses
+> the authenticated session, keeping request volume low).
 
 ### Forgot Password 60-min block set (t1.3.21–26) — observed behavior
 
