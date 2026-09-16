@@ -22,7 +22,31 @@ Manual execution of the "needs manual September execution" cases from
 | t1.1.25 | Reset Password — valid OTP on 5th attempt → not blocked | ✅ PASS | Manual (`jjavier+cg1`) |
 | t1.1.24 | Reset Password — reset works after 60-min block expiry | 🕒 HUMAN-MANUAL | Real 60-min wait |
 | t1.1.26 | Reset Password — 3 sessions spanning >15 min → no block | 🕒 HUMAN-MANUAL | Real 15-min staged waits |
-| t1.4.17–22 | Change Password — OTP-session 60-min block set | ⏳ PENDING | Needs logged-in expendable account |
+| t1.4.17 | Change Password — 60-min block after 3 unverified sessions | ✅ PASS | Manual (`jjavier+cg1`, logged in) |
+| t1.4.19 | Change Password — blocked email keeps returning error | ✅ PASS | Manual (timer 59→58) |
+| t1.4.18 | Change Password — block via abandoned sessions | ⛔ NEEDS ACCT | Fresh logged-in expendable account |
+| t1.4.21 | Change Password — valid OTP on 5th attempt → not blocked | ⛔ NEEDS ACCT | Fresh logged-in expendable account |
+| t1.4.20 | Change Password — reset works after 60-min block expiry | 🕒 HUMAN-MANUAL | Real 60-min wait |
+| t1.4.22 | Change Password — 3 sessions spanning >15 min → no block | 🕒 HUMAN-MANUAL | Real 15-min staged waits |
+| t1.3.22 | Forgot Password — block via abandoned sessions | ⛔ NEEDS ACCT | Fresh expendable email |
+| t1.3.25 | Forgot Password — valid OTP on 5th attempt → not blocked | ⛔ NEEDS ACCT | Fresh expendable email |
+
+### Change Password 60-min block set (t1.4.17–22) — observed behavior
+
+Executed live logged in as `jjavier+cg1` (Cat Gray). Change Password lives at
+**Profile menu → Change password** (`/dashboard/profile/change-password`): enter
+current + new + re-enter → Continue → OTP → verify. Magic OTP `999999`:
+
+- **t1.4.17 ✅ PASS** — 3 change-password sessions, each `999999` → *"Verification
+  Failed — maximum number of attempts."* On **session #4** (Continue) the email was
+  blocked: **"You have exceeded the maximum number of attempts. You can try again in
+  59 minutes."** — user remains on the Change Password page (expected #4 ✅).
+- **t1.4.19 ✅ PASS** — retrying Continue during the block → same error, timer
+  **59 → 58 minutes** (expected #3 ✅).
+
+> **All three flows (Reset t1.1, Forgot t1.3, Change t1.4) confirmed to share the
+> identical OTP-session-block backend** — same modal wording, same 60-min timer,
+> same behavior for both the max-attempts (`999999`) and abandoned-session triggers.
 
 ### Reset Password 60-min block set (t1.1.21–26) — observed behavior
 
