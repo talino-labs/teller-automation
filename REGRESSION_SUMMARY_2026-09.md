@@ -26,6 +26,7 @@ Of the 10 failures: **1** is a confirmed product defect, **4** are a product def
 | 2_customers | t2.6 Avail Loan Product | 19 | 0 | 1 | ✅ |
 | 3_accounts | t3.1 View Accounts | 11 | 0 | 0 | ✅ |
 | 3_accounts | t3.2 View Account Transactions | 17 | 0 | 0 | ✅ |
+| 3_accounts | t3.3 Create New Bank Account | — | — | — | **Not run — feature not deployed on ITG** (see below) |
 | 4_transactions | t4.1 View All Transactions | 15 | 0 | 0 | ✅ |
 | 4_transactions | t4.2 Withdrawal Transaction | 26 | 0 | 5 | ✅ |
 | 4_transactions | t4.3 Deposit Transaction | 19 | 0 | 0 | ✅ |
@@ -57,8 +58,9 @@ Of the 10 failures: **1** is a confirmed product defect, **4** are a product def
 - **t1.2 lockout counter-detail tests** — `t1.2.11/.12/.13/.16/.19`
   Each needs the account's failed-attempt counter reset to exactly 0; lifting the lock doesn't reset the counter reliably, so they fail on a precondition. The lockout feature itself is proven (t1.2.10 blocks-after-5, t1.2.14 per-account, t1.2.15 reset-lifts-block pass).
 
-### Blocked module
+### Blocked module(s)
 3. **t8.1 Interest Crediting — not run.** No interest credits observed since 17 Aug (~27 days; no September batch — crediting job appears stopped), and historical cadence is mixed (daily on one account 15–17 Aug; monthly-style batch 01 Aug). Needs confirmation of whether the scheduler is running and the intended cadence (daily vs monthly) before the computation tests can be finalized. Structural tests (t8.1.6/.7) pass against existing records. → GitHub [#38](https://github.com/QA-Jo/teller-automation/issues/38)
+4. **t3.3 Create New Bank Account — not run (feature not deployed).** The account-onboarding wizard (T&C → Personal Info → Address → Financial Info) is not surfaced in the current ITG build. Verified 16 Sep 2026: no "Create New Bank Account" entry point for the Teller role (`jjavier+sa`) or the Maker role (`jjavier+jr1`); `/accounts/create` redirects away. The User Management → "Create User" flow is a different feature (creates system users, not customer accounts). No automated suite exists; revisit once the feature ships. Details in `COVERAGE_GAP_2026-09.md` §E.
 
 ## Test-defects fixed & verified this effort
 - **t2.5.15, t2.6.9/.19/.21, t7.5.5** — stale test bugs (fixes committed but never re-run)

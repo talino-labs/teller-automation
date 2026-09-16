@@ -12,9 +12,10 @@ Cross-check of the master test-case catalog (`ITG Full Regression Testing - Sept
 | ✅ Covered by September automated run | 285 |
 | 🟡 Needs manual September execution | 29 |
 | 🟢 "Dropped" — actually covered/stale (numbering mismatch) | 5 → 0 real gaps |
+| 🚧 Blocked — feature not yet deployed on ITG (t3.3) | 8 TCs |
 | ➕ Extra Sept modules not in the catalog | 7 modules |
 
-> Only **one real automation gap** exists: **t3.3 Create New Bank Account** (8 TCs, no automated suite — entry point is permission-gated). Everything else is covered by the September automated run, needs manual execution (Section A), or is a numbering/stale artifact (Section B).
+> There are **no automatable gaps** in the current build. The only module with no suite — **t3.3 Create New Bank Account** — is **not yet deployed on ITG** (verified 16 Sep 2026, see Section E), so it cannot be automated or executed yet. Everything else is covered by the September automated run, needs manual execution (Section A), or is a numbering/stale artifact (Section B).
 
 ## A. 🟡 Needs manual September execution
 
@@ -26,8 +27,9 @@ Inherently manual (OTP-session blocking, 5-min session/OTP timeouts, or no autom
 | t1.3 Forgot Password | t1.3.21 t1.3.22 t1.3.23 t1.3.24 t1.3.25 t1.3.26 | t1.3.21–26 OTP-session blocking |
 | t1.4 Change Password | t1.4.17 t1.4.18 t1.4.19 t1.4.20 t1.4.21 t1.4.22 | t1.4.17–22 OTP-session/blocking |
 | t2.5 Avail Savings Product | t2.5.19 | t2.5.19 |
-| t3.3 Create New Bank Account | t3.3.1 t3.3.2 t3.3.3 t3.3.4 t3.3.5 t3.3.6 t3.3.7 t3.3.8 | **entire module — no automated suite exists** |
 | t5.3 Create New Product | t5.3.36 | t5.3.36 |
+
+> **t3.3 Create New Bank Account** was removed from this "manual execution" list — it is **blocked**, not manually runnable yet. See Section E.
 
 ## B. 🟢 "Dropped" — verified as covered/stale (numbering mismatch, NOT gaps)
 
@@ -58,9 +60,19 @@ These modules were executed in September but have **no rows in the catalog CSV**
 
 The remaining **285** catalog test cases across modules t1.1–t1.4, t2.1–t2.5, t3.1–t3.2, t4.1–t4.3, t5.1–t5.3, t6.1 are present in the September automated suites. See the published report and `REGRESSION_SUMMARY_2026-09.md` for pass/fail. *(A few may be tagged skip / manual-verify within the suite — check the report for any SKIP status.)*
 
+## E. 🚧 Blocked — feature not yet deployed on ITG
+
+**t3.3 Create New Bank Account (t3.3.1–t3.3.8)** — the catalog's account-onboarding wizard (T&C → Personal Info → Address → Financial Info) is **not available in the current San Antonio ITG build**. Verified live on **16 Sep 2026**:
+
+- **Teller role** (`jjavier+sa`, full t2–t7 module nav) — no "Create New Bank Account" button on the Accounts module.
+- **Maker role** (`jjavier+jr1`, "James Reid") — narrow nav (Customers / Accounts / Change Requests only); no create-account entry point. Direct route `/accounts/create` redirects to the default page.
+- The **User Management → "+ Create User"** flow (visible to Administrator/Super-Admin roles) is a **different feature** — it creates *system users* (Maker / Checker / Branch Manager), **not** a customer bank account, so it does not satisfy t3.3.
+
+**Conclusion:** t3.3 cannot be automated or executed until the account-onboarding feature is deployed and surfaced to a teller role. Track it as blocked, not as a missing test. Re-scope and build the suite once the wizard is live.
+
 ## Recommended actions
 
-1. **t3.3 Create New Bank Account** — the one real automation gap. Automate it (entry point is permission-gated, so it needs a teller account with create-account permission), or run it manually in September and record results.
+1. **t3.3 Create New Bank Account — BLOCKED, no action possible yet.** The onboarding wizard is not deployed on ITG (Section E). Do **not** treat it as an open automation gap; revisit and automate once the feature ships. There are currently **no automatable coverage gaps**.
 
 2. **Run the other manual TCs in September** (Section A) and record results — the OTP-session/blocking and session-timeout sets.
 
