@@ -798,10 +798,19 @@ t2.5.19 Session Timeout During Savings Availment Flow
     [Documentation]    Verify that a session timeout during the availment flow redirects the
     ...                user to the Login page with a session-expired modal, and discards the
     ...                in-progress availment data.
-    ...                SKIPPED — requires 5+ minutes of idle time which exceeds automated test limits.
-    [Tags]             customers    products    skip    type2
+    ...                Slow test (~5 min idle) — excluded from CI by the 'slow' tag; run on demand.
+    [Tags]             customers    products    slow    type2
 
-    Skip    Requires 5+ minutes idle time — cannot be automated without browser session control
+    Navigate To Avail Product Page
+    Wait For Elements State      ${AVAIL_PRODUCT_PAGE}    visible
+    # Remain idle past the 5-minute session timeout (301s), then attempt to continue.
+    Sleep                        301s
+    Run Keyword And Ignore Error    Click    ${AVAIL_PRODUCT_CONTINUE_BTN}
+    # Session is terminated: user is redirected to Login with the Session Expired modal.
+    Wait For Elements State      text=Session Expired    visible    timeout=15s
+    Wait For Elements State
+    ...    text=For security reasons, you need to sign in again to continue using the app.    visible
+    Wait For Elements State      ${LOGIN_PAGE}    visible
 
 t2.5.20 Use Browser Back Button During Savings Availment Flow
     [Documentation]    Verify that pressing the browser Back button from the Review step is
