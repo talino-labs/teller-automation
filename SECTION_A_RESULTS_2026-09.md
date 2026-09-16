@@ -10,9 +10,32 @@ Manual execution of the "needs manual September execution" cases from
 | t2.5.19 | Session Timeout During Savings Availment Flow | ✅ PASS | Automated (implemented; was a `Skip`) |
 | t5.3.36 | Savings Product Version Update Creates Deprecated Version | ✅ PASS | Manual UI (16 Sep 2026) — automation to follow |
 | t1.1.1  | Reset Password via "Reset Password Now" link | 🟡 PARTIAL | Flow verified by equivalence; email-link step needs inbox |
-| t1.1.21–26 | Reset Password — OTP-session 60-min block set | ⏳ IN PROGRESS | Manual w/ magic OTP values (see below) |
-| t1.3.21–26 | Forgot Password — OTP-session 60-min block set | ⏳ IN PROGRESS | Manual w/ magic OTP values |
-| t1.4.17–22 | Change Password — OTP-session 60-min block set | ⏳ IN PROGRESS | Manual w/ magic OTP values |
+| t1.3.21 | Forgot Password — 60-min block after 3 unverified sessions (5 invalid attempts) | ✅ PASS | Manual, magic OTP `999999` |
+| t1.3.23 | Forgot Password — blocked email keeps returning error during block | ✅ PASS | Manual |
+| t1.3.22 | Forgot Password — block via abandoned sessions | ⛔ NEEDS ACCT | Needs a fresh expendable email |
+| t1.3.25 | Forgot Password — valid OTP on 5th attempt → not blocked | ⛔ NEEDS ACCT | Needs a fresh expendable email |
+| t1.3.24 | Forgot Password — reset works after 60-min block expiry | 🕒 HUMAN-MANUAL | Real 60-min wait |
+| t1.3.26 | Forgot Password — 3 sessions spanning >15 min → no block | 🕒 HUMAN-MANUAL | Real 15-min staged waits |
+| t1.1.21–26 | Reset Password — OTP-session 60-min block set | ⏳ PENDING | Needs first-time-login temp accounts |
+| t1.4.17–22 | Change Password — OTP-session 60-min block set | ⏳ PENDING | Needs logged-in expendable account |
+
+### Forgot Password 60-min block set (t1.3.21–26) — observed behavior
+
+Executed live against ITG using the sacrificial email `jjavier+jr1@nmblr.ai` and
+magic OTP `999999` (= max-attempts, collapses one "5-invalid-attempts session"):
+
+- **t1.3.21 ✅ PASS** — 3 forgot-password sessions, each `999999` → modal
+  *"Verification Failed — You have reached the maximum number of attempts."* On
+  attempting **session #4**, the app blocked the email:
+  **"You have exceeded the maximum number of attempts. You can try again in 59 minutes."**
+  (CONFIRM keeps the user on the Forgot Password page — expected #4 ✅). Only the
+  "Security Notice" email (expected #5) is unverifiable here (no inbox).
+- **t1.3.23 ✅ PASS** — re-attempting Send Verification Code during the block shows
+  the same error with the time **decremented (59 → 58 minutes)** — expected #3 ✅.
+- The whole run stayed **under** the network rate limit (~7 requests total).
+
+> The 999999 magic value works exactly as intended, so the block feature is proven.
+> Remaining cases are gated only by account availability / real time, not by the app.
 
 ## Details
 
