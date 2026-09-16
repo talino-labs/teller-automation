@@ -1,5 +1,6 @@
 *** Settings ***
 Library     Browser
+Library     String
 Resource    ../locators/common_locators.resource
 
 

@@ -89,6 +89,58 @@ Enter CP OTP And Continue
     Keyboard Input              type    ${otp}
     Click                       ${CP_OTP_CONTINUE_BTN}
 
+Set CP OTP And Continue
+    [Documentation]    Robustly sets each of the 6 OTP boxes (replacing any existing value) then
+    ...                clicks CONTINUE. Needed for re-entering a different OTP within one session.
+    [Arguments]        ${otp}=${OTP}
+    @{chars}=    Split String To Characters    ${otp}
+    FOR    ${idx}    ${ch}    IN ENUMERATE    @{chars}    start=1
+        Fill Text
+        ...    css=[data-testid="input-change-password-otp"] input[aria-label="Please enter OTP character ${idx}"]
+        ...    ${ch}
+    END
+    Click    ${CP_OTP_CONTINUE_BTN}
+
+Submit CP Form
+    [Documentation]    Fills the Change Password form and clicks Continue WITHOUT waiting for the OTP
+    ...                screen — so it also works when a block message appears instead. Assumes the
+    ...                page is on the Change Password form.
+    [Arguments]        ${current_password}    ${new_password}=${OTP_BLK_NEW_PASSWORD}
+    Fill Text    ${CP_CURRENT_PWD_FIELD}    ${current_password}
+    Fill Text    ${CP_NEW_PWD_FIELD}        ${new_password}
+    Fill Text    ${CP_CONFIRM_PWD_FIELD}    ${new_password}
+    Click        ${CP_CONTINUE_BTN}
+
+Open Change Password From Menu
+    [Documentation]    From any authenticated dashboard page, opens the profile menu and navigates
+    ...                to the Change Password page (no re-login).
+    Click                       ${CP_PROFILE_DROPDOWN}
+    Wait For Elements State     ${CP_CHANGE_PASSWORD_LINK}    visible
+    Click                       ${CP_CHANGE_PASSWORD_LINK}
+    Wait For Elements State     ${CP_PAGE}    visible
+
+Trigger Unverified CP Max-Attempts Session
+    [Documentation]    From the Change Password form, completes it, submits the magic max-attempts
+    ...                OTP, dismisses the modal, and returns to the Change Password form — recording
+    ...                one unverified OTP session.
+    [Arguments]        ${current_password}    ${new_password}=${OTP_BLK_NEW_PASSWORD}
+    Complete Change Password Form    current_password=${current_password}    new_password=${new_password}
+    Enter CP OTP And Continue        otp=${OTP_MAX_ATTEMPTS}
+    Wait For Elements State          text=${ERR_OTP_MAX_ATTEMPTS_1}    visible
+    Click                            ${MODAL_CONFIRM_BTN}
+    Wait For Elements State          ${CP_PAGE}    visible
+
+Abandon One CP OTP Session
+    [Documentation]    From the Change Password form, completes it to reach the OTP screen, then
+    ...                abandons it via the back arrow (leaves the OTP screen) — recording one
+    ...                unverified (abandoned) session. Returns to the Change Password form ready for
+    ...                the next session (still logged in).
+    [Arguments]        ${current_password}    ${new_password}=${OTP_BLK_NEW_PASSWORD}
+    Complete Change Password Form    current_password=${current_password}    new_password=${new_password}
+    Click                            ${CP_OTP_BACK_BTN}
+    Wait For Elements State          ${CP_OTP_INPUT}    hidden    timeout=10s
+    Open Change Password From Menu
+
 
 *** Test Cases ***
 
@@ -402,3 +454,65 @@ t1.4.16 Change Password – Behavior When OTP Session Expires Before Reaching Ma
     # 6. Click "Request New Code" — should redirect back to Change Password page
     Click                       text=Request New Code
     Wait For Elements State     ${CP_PAGE}    visible
+
+t1.4.17 Change Password – Email Blocked 60 Minutes After 3 Unverified OTP Sessions (5 Invalid Attempts)
+    [Documentation]    Verify that 3 unverified Change Password OTP sessions (each hitting max attempts
+    ...                via ${OTP_MAX_ATTEMPTS}) block the email for 60 minutes; the 4th Continue shows
+    ...                "You have exceeded the maximum number of attempts. You can try again in <n>
+    ...                minutes." and the user stays on the Change Password page. REUSABLE: refresh
+    ...                ${OTP_BLK_CP_MAX_EMAIL}/_PW each cycle — this blocks the account for 60 minutes.
+    [Tags]    change-password    otp    security    otp-block    type2
+    Navigate To Change Password Page    email=${OTP_BLK_CP_MAX_EMAIL}    password=${OTP_BLK_CP_MAX_PW}
+    FOR    ${i}    IN RANGE    3
+        Trigger Unverified CP Max-Attempts Session    current_password=${OTP_BLK_CP_MAX_PW}
+    END
+    Submit CP Form             current_password=${OTP_BLK_CP_MAX_PW}
+    Wait For Elements State    text=${ERR_OTP_SESSION_BLOCKED}    visible
+
+t1.4.18 Change Password – Email Blocked 60 Minutes After 3 Unverified OTP Sessions (Abandoned)
+    [Documentation]    Verify that 3 abandoned Change Password OTP sessions (reach the OTP screen,
+    ...                then leave via the back arrow) block the email for 60 minutes; the 4th Continue
+    ...                shows the block message. REUSABLE: refresh ${OTP_BLK_CP_ABANDON_EMAIL}/_PW each
+    ...                cycle.
+    [Tags]    change-password    otp    security    otp-block    type2
+    Navigate To Change Password Page    email=${OTP_BLK_CP_ABANDON_EMAIL}    password=${OTP_BLK_CP_ABANDON_PW}
+    FOR    ${i}    IN RANGE    3
+        Abandon One CP OTP Session    current_password=${OTP_BLK_CP_ABANDON_PW}
+    END
+    Submit CP Form             current_password=${OTP_BLK_CP_ABANDON_PW}
+    Wait For Elements State    text=${ERR_OTP_SESSION_BLOCKED}    visible
+
+t1.4.19 Change Password – Blocked Email Keeps Returning the Error During the Block Period
+    [Documentation]    Verify that once blocked, every further Change Password attempt during the
+    ...                60-minute window returns the same block error. REUSABLE: refresh
+    ...                ${OTP_BLK_CP_RETRY_EMAIL}/_PW each cycle.
+    [Tags]    change-password    otp    security    otp-block    type2
+    Navigate To Change Password Page    email=${OTP_BLK_CP_RETRY_EMAIL}    password=${OTP_BLK_CP_RETRY_PW}
+    FOR    ${i}    IN RANGE    3
+        Trigger Unverified CP Max-Attempts Session    current_password=${OTP_BLK_CP_RETRY_PW}
+    END
+    Submit CP Form             current_password=${OTP_BLK_CP_RETRY_PW}
+    Wait For Elements State    text=${ERR_OTP_SESSION_BLOCKED}    visible
+    Click                      ${MODAL_CONFIRM_BTN}
+    Submit CP Form             current_password=${OTP_BLK_CP_RETRY_PW}
+    Wait For Elements State    text=${ERR_OTP_SESSION_BLOCKED}    visible
+
+t1.4.21 Change Password – No Block When a Valid OTP Is Entered on the 5th Attempt of the 3rd Session
+    [Documentation]    Verify the user is NOT blocked when only 2 sessions are unverified and the 3rd
+    ...                is verified via a valid OTP on the 5th attempt. Enters 4 invalid OTPs then the
+    ...                valid OTP in session 3 and completes the password change. REUSABLE: refresh
+    ...                ${OTP_BLK_CP_VALID5_EMAIL}/_PW each cycle — this changes that account's password
+    ...                to ${OTP_BLK_NEW_PASSWORD}.
+    [Tags]    change-password    otp    security    otp-block    type2
+    Navigate To Change Password Page    email=${OTP_BLK_CP_VALID5_EMAIL}    password=${OTP_BLK_CP_VALID5_PW}
+    FOR    ${i}    IN RANGE    2
+        Trigger Unverified CP Max-Attempts Session    current_password=${OTP_BLK_CP_VALID5_PW}
+    END
+    # Session 3: 4 invalid attempts then a valid OTP on the 5th → success, no block.
+    Complete Change Password Form    current_password=${OTP_BLK_CP_VALID5_PW}    new_password=${OTP_BLK_NEW_PASSWORD}
+    FOR    ${i}    IN RANGE    4
+        Set CP OTP And Continue    otp=${OTP_INVALID}
+        Wait For Elements State    text=${ERR_OTP_INVALID}    visible
+    END
+    Set CP OTP And Continue    otp=${OTP}
+    Wait For Elements State    ${CP_SUCCESS_MESSAGE}    visible

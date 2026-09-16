@@ -109,6 +109,20 @@ ${MODAL_CANCEL_BTN}                 xpath=//button[.//span[text()='CANCEL'] or t
 ${MODAL_OK_BTN}                     css=.ant-modal-footer button.ant-btn-primary
 ${MODAL_CLOSE_BTN}                  css=.ant-modal-close
 
+# ============================================================
+# OTP SESSION 60-MINUTE BLOCK (shared across Reset / Forgot / Change)
+# Shown after 3 unverified OTP sessions within the window. The block modal's
+# button is "CONFIRM" (reuse ${MODAL_CONFIRM_BTN}); the stable message prefix
+# below tolerates the dynamic "X minutes" remaining-time text.
+# ============================================================
+${ERR_OTP_SESSION_BLOCKED}          You have exceeded the maximum number of attempts
+# "Log in" link on the Reset/Forgot OTP screen — used to abandon an OTP session.
+${OTP_ABANDON_LOGIN_LINK}           xpath=//a[normalize-space()='Log in']
+# "Are you sure you want to exit?" confirmation shown when abandoning a Reset/Forgot OTP session.
+${OTP_EXIT_CONFIRM_BTN}             xpath=//button[normalize-space()='Confirm']
+# Back arrow on the Change Password OTP screen — used to abandon the (authenticated) OTP session.
+${CP_OTP_BACK_BTN}                  xpath=//button[@aria-label='Go back']
+
 
 # ============================================================
 # ANT DESIGN TOAST MESSAGES

@@ -59,6 +59,59 @@ Complete OTP Verification
     Click                       ${FP_CONTINUE_BTN}
     Wait For Elements State     ${NEW_PASSWORD_FIELD}    visible
 
+Submit FP Email
+    [Documentation]    Fills the Forgot Password email and clicks Send Verification Code WITHOUT
+    ...                waiting for the OTP screen — so it also works when a block message appears
+    ...                instead. Assumes the page is on the Forgot Password screen.
+    [Arguments]        ${email}
+    Fill Text                   ${FP_EMAIL_FIELD}    ${email}
+    Click                       ${FP_SEND_CODE_BTN}
+
+Enter FP OTP And Continue
+    [Documentation]    Clicks the OTP input, types the OTP code, and clicks CONTINUE.
+    [Arguments]        ${otp}=${OTP}
+    Click                       ${FP_OTP_INPUT}
+    Keyboard Input              type    ${otp}
+    Click                       ${FP_CONTINUE_BTN}
+
+Set FP OTP And Continue
+    [Documentation]    Robustly sets each of the 6 OTP boxes (replacing any existing value) then
+    ...                clicks CONTINUE. Needed for re-entering a different OTP within one session.
+    [Arguments]        ${otp}=${OTP}
+    @{chars}=    Split String To Characters    ${otp}
+    FOR    ${idx}    ${ch}    IN ENUMERATE    @{chars}    start=1
+        Fill Text
+        ...    css=[data-testid="input-forgot-password-otp"] input[aria-label="Please enter OTP character ${idx}"]
+        ...    ${ch}
+    END
+    Click    ${FP_CONTINUE_BTN}
+
+Trigger Unverified FP Max-Attempts Session
+    [Documentation]    From the Forgot Password screen, sends the code, submits the magic
+    ...                max-attempts OTP, dismisses the modal, and returns to the Forgot Password
+    ...                screen — recording one unverified OTP session.
+    [Arguments]        ${email}
+    Submit FP Email                 ${email}
+    Wait For Elements State         ${FP_OTP_INPUT}    visible
+    Enter FP OTP And Continue       otp=${OTP_MAX_ATTEMPTS}
+    Wait For Elements State         text=${ERR_OTP_MAX_ATTEMPTS}    visible
+    Click                           ${MODAL_CONFIRM_BTN}
+    Wait For Elements State         ${FP_PAGE}    visible
+
+Abandon One FP OTP Session
+    [Documentation]    From the Forgot Password screen, sends the code, reaches the OTP screen, then
+    ...                abandons it via the "Log in" link and the exit-confirmation modal — recording
+    ...                one unverified (abandoned) session. Returns to the Forgot Password screen ready
+    ...                for the next session (reuses the same browser).
+    [Arguments]        ${email}
+    Submit FP Email                 ${email}
+    Wait For Elements State         ${FP_OTP_INPUT}    visible
+    Click                           ${OTP_ABANDON_LOGIN_LINK}
+    Click                           ${OTP_EXIT_CONFIRM_BTN}
+    Wait For Elements State         ${LOGIN_PAGE}    visible
+    Click                           ${FORGOT_PASSWORD_LINK}
+    Wait For Elements State         ${FP_PAGE}    visible
+
 
 *** Test Cases ***
 t1.3.1 Reset Password via Forgot Password
@@ -451,3 +504,67 @@ t1.3.20 Reset Password – Behavior when OTP session expires before reaching max
     # Assert redirection to Login screen
     Wait For Elements State     ${LOGIN_PAGE}                      visible
     Close Browser
+t1.3.21 Forgot Password – Email Blocked 60 Minutes After 3 Unverified OTP Sessions (5 Invalid Attempts)
+    [Documentation]    Verify that 3 unverified Forgot Password OTP sessions (each hitting max attempts
+    ...                via ${OTP_MAX_ATTEMPTS}) block the email for 60 minutes; the 4th "Send
+    ...                Verification Code" shows "You have exceeded the maximum number of attempts.
+    ...                You can try again in <n> minutes." REUSABLE: refresh ${OTP_BLK_FP_MAX_EMAIL}
+    ...                each cycle — this blocks the account's email for 60 minutes.
+    [Tags]    forgot-password    otp    security    otp-block    type2
+    Navigate To Forgot Password Page
+    FOR    ${i}    IN RANGE    3
+        Trigger Unverified FP Max-Attempts Session    ${OTP_BLK_FP_MAX_EMAIL}
+    END
+    Submit FP Email            ${OTP_BLK_FP_MAX_EMAIL}
+    Wait For Elements State    text=${ERR_OTP_SESSION_BLOCKED}    visible
+
+t1.3.22 Forgot Password – Email Blocked 60 Minutes After 3 Unverified OTP Sessions (Abandoned)
+    [Documentation]    Verify that 3 abandoned Forgot Password OTP sessions block the email for 60
+    ...                minutes; the 4th send shows the block message. REUSABLE: refresh
+    ...                ${OTP_BLK_FP_ABANDON_EMAIL} each cycle.
+    [Tags]    forgot-password    otp    security    otp-block    type2
+    Navigate To Forgot Password Page
+    FOR    ${i}    IN RANGE    3
+        Abandon One FP OTP Session    ${OTP_BLK_FP_ABANDON_EMAIL}
+    END
+    Submit FP Email            ${OTP_BLK_FP_ABANDON_EMAIL}
+    Wait For Elements State    text=${ERR_OTP_SESSION_BLOCKED}    visible
+
+t1.3.23 Forgot Password – Blocked Email Keeps Returning the Error During the Block Period
+    [Documentation]    Verify that once blocked, every further Forgot Password attempt during the
+    ...                60-minute window returns the same block error. REUSABLE: refresh
+    ...                ${OTP_BLK_FP_RETRY_EMAIL} each cycle.
+    [Tags]    forgot-password    otp    security    otp-block    type2
+    Navigate To Forgot Password Page
+    FOR    ${i}    IN RANGE    3
+        Trigger Unverified FP Max-Attempts Session    ${OTP_BLK_FP_RETRY_EMAIL}
+    END
+    Submit FP Email            ${OTP_BLK_FP_RETRY_EMAIL}
+    Wait For Elements State    text=${ERR_OTP_SESSION_BLOCKED}    visible
+    Click                      ${MODAL_CONFIRM_BTN}
+    Submit FP Email            ${OTP_BLK_FP_RETRY_EMAIL}
+    Wait For Elements State    text=${ERR_OTP_SESSION_BLOCKED}    visible
+
+t1.3.25 Forgot Password – No Block When a Valid OTP Is Entered on the 5th Attempt of the 3rd Session
+    [Documentation]    Verify the user is NOT blocked when only 2 sessions are unverified and the 3rd
+    ...                is verified via a valid OTP on the 5th attempt. Enters 4 invalid OTPs then the
+    ...                valid OTP in session 3 and completes the reset. REUSABLE: refresh
+    ...                ${OTP_BLK_FP_VALID5_EMAIL} each cycle — this resets that account's password.
+    [Tags]    forgot-password    otp    security    otp-block    type2
+    Navigate To Forgot Password Page
+    FOR    ${i}    IN RANGE    2
+        Trigger Unverified FP Max-Attempts Session    ${OTP_BLK_FP_VALID5_EMAIL}
+    END
+    # Session 3: 4 invalid attempts then a valid OTP on the 5th → reset succeeds, no block.
+    Submit FP Email             ${OTP_BLK_FP_VALID5_EMAIL}
+    Wait For Elements State     ${FP_OTP_INPUT}    visible
+    FOR    ${i}    IN RANGE    4
+        Set FP OTP And Continue    otp=${OTP_INVALID}
+        Wait For Elements State    text=${ERR_OTP_INVALID}    visible
+    END
+    Set FP OTP And Continue     otp=${OTP}
+    Wait For Elements State     ${NEW_PASSWORD_FIELD}    visible
+    Fill Text                   ${NEW_PASSWORD_FIELD}           ${OTP_BLK_NEW_PASSWORD}
+    Fill Text                   ${CONFIRM_NEW_PASSWORD_FIELD}   ${OTP_BLK_NEW_PASSWORD}
+    Click                       ${RESET_PASSWORD_BTN}
+    Wait For Elements State     ${RESET_SUCCESS_MESSAGE}    visible

@@ -73,6 +73,56 @@ Enter RTP OTP And Continue
     Keyboard Input              type    ${otp}
     Click                       ${RTP_OTP_CONTINUE_BTN}
 
+Set RTP OTP And Continue
+    [Documentation]    Robustly sets each of the 6 OTP boxes (replacing any existing value) then
+    ...                clicks CONTINUE. Needed when re-entering a different OTP within the same
+    ...                session (e.g. after failed attempts), where typing into filled boxes is a
+    ...                no-op. Reusable for any OTP value.
+    [Arguments]        ${otp}=${OTP}
+    @{chars}=    Split String To Characters    ${otp}
+    FOR    ${idx}    ${ch}    IN ENUMERATE    @{chars}    start=1
+        Fill Text
+        ...    css=[data-testid="input-reset-temp-password-otp"] input[aria-label="Please enter OTP character ${idx}"]
+        ...    ${ch}
+    END
+    Click    ${RTP_OTP_CONTINUE_BTN}
+
+Trigger Unverified RTP Max-Attempts Session
+    [Documentation]    From the Reset Password form, completes it, submits the magic max-attempts
+    ...                OTP, dismisses the resulting modal, and returns to the Reset Password form —
+    ...                i.e. records one unverified OTP session. Assumes the page is on the RTP form.
+    [Arguments]        ${temp_password}    ${new_password}=${OTP_BLK_NEW_PASSWORD}
+    Complete Reset Password Form    temp_password=${temp_password}    new_password=${new_password}
+    Enter RTP OTP And Continue      otp=${OTP_MAX_ATTEMPTS}
+    Wait For Elements State         text=${ERR_OTP_MAX_ATTEMPTS_1}    visible
+    Click                           ${MODAL_CONFIRM_BTN}
+    Wait For Elements State         ${RTP_PAGE}    visible
+
+Abandon One RTP OTP Session
+    [Documentation]    From the Login page (browser already open), logs in with the temp password,
+    ...                reaches the OTP screen, then abandons it via the "Log in" link and the
+    ...                exit-confirmation modal — recording one unverified (abandoned) OTP session.
+    ...                Ends back on the Login page (reuses the same browser — no leak).
+    [Arguments]        ${email}    ${temp_password}    ${new_password}=${OTP_BLK_NEW_PASSWORD}
+    Fill Text                          ${EMAIL_FIELD}       ${email}
+    Fill Text                          ${PASSWORD_FIELD}    ${temp_password}
+    Click                              ${LOGIN_BUTTON}
+    Wait For Elements State            ${RTP_PAGE}    visible
+    Complete Reset Password Form       temp_password=${temp_password}    new_password=${new_password}
+    Click                              ${OTP_ABANDON_LOGIN_LINK}
+    Click                              ${OTP_EXIT_CONFIRM_BTN}
+    Wait For Elements State            ${LOGIN_PAGE}    visible
+
+Submit RTP Reset Form
+    [Documentation]    Fills and submits the Reset Password form WITHOUT waiting for the OTP screen,
+    ...                so it works both when the OTP screen follows and when a block message appears
+    ...                instead. Assumes the page is on the Reset Password form.
+    [Arguments]        ${temp_password}    ${new_password}=${OTP_BLK_NEW_PASSWORD}
+    Fill Text    ${RTP_TEMP_PASSWORD_FIELD}       ${temp_password}
+    Fill Text    ${RTP_NEW_PASSWORD_FIELD}        ${new_password}
+    Fill Text    ${RTP_CONFIRM_PASSWORD_FIELD}    ${new_password}
+    Click        ${RTP_SUBMIT_BTN}
+
 
 *** Test Cases ***
 
@@ -440,3 +490,73 @@ t1.1.20 Reset Password – Behavior When OTP Session Expires Before Reaching Max
     # 6. Click "Request New Code" — should redirect to login
     Click                       text=Request New Code
     Wait For Elements State     ${LOGIN_PAGE}    visible
+
+t1.1.21 Reset Password – Email Blocked 60 Minutes After 3 Unverified OTP Sessions (5 Invalid Attempts)
+    [Documentation]    Verify that after 3 unverified Reset Password OTP sessions within the window
+    ...                (each reaching the max attempts via the magic ${OTP_MAX_ATTEMPTS} value), a
+    ...                4th attempt is blocked with "You have exceeded the maximum number of attempts.
+    ...                You can try again in <n> minutes." and the user remains on the Reset Password
+    ...                page. REUSABLE: swap ${OTP_BLK_RTP_MAX_EMAIL}/_TEMP_PW for a fresh temp account
+    ...                each cycle — this test blocks the account's email for 60 minutes.
+    [Tags]    reset-password    otp    security    otp-block    temp-password    type2
+    Navigate To Reset Password Page    email=${OTP_BLK_RTP_MAX_EMAIL}    temp_password=${OTP_BLK_RTP_MAX_TEMP_PW}
+    FOR    ${i}    IN RANGE    3
+        Trigger Unverified RTP Max-Attempts Session    temp_password=${OTP_BLK_RTP_MAX_TEMP_PW}
+    END
+    # 4th session → the email is now blocked for 60 minutes.
+    Submit RTP Reset Form    temp_password=${OTP_BLK_RTP_MAX_TEMP_PW}
+    Wait For Elements State    text=${ERR_OTP_SESSION_BLOCKED}    visible
+
+t1.1.22 Reset Password – Email Blocked 60 Minutes After 3 Unverified OTP Sessions (Abandoned)
+    [Documentation]    Verify that 3 abandoned Reset Password OTP sessions (reach the OTP screen, then
+    ...                exit via the "Log in" link) block the email for 60 minutes; the 4th login shows
+    ...                the block message. REUSABLE: refresh ${OTP_BLK_RTP_ABANDON_EMAIL}/_TEMP_PW each
+    ...                cycle — this blocks the account's email for 60 minutes.
+    [Tags]    reset-password    otp    security    otp-block    temp-password    type2
+    Open Teller App
+    FOR    ${i}    IN RANGE    3
+        Abandon One RTP OTP Session    email=${OTP_BLK_RTP_ABANDON_EMAIL}    temp_password=${OTP_BLK_RTP_ABANDON_TEMP_PW}
+    END
+    # 4th session attempt → blocked at login.
+    Fill Text                  ${EMAIL_FIELD}       ${OTP_BLK_RTP_ABANDON_EMAIL}
+    Fill Text                  ${PASSWORD_FIELD}    ${OTP_BLK_RTP_ABANDON_TEMP_PW}
+    Click                      ${LOGIN_BUTTON}
+    Wait For Elements State    text=${ERR_OTP_SESSION_BLOCKED}    visible
+
+t1.1.23 Reset Password – Blocked Email Keeps Returning the Error During the Block Period
+    [Documentation]    Verify that once the email is blocked, every further Reset Password attempt
+    ...                during the 60-minute window returns the same block error. Triggers the block
+    ...                (3 unverified sessions + a 4th), dismisses it, then retries and re-asserts.
+    ...                REUSABLE: refresh ${OTP_BLK_RTP_RETRY_EMAIL}/_TEMP_PW each cycle.
+    [Tags]    reset-password    otp    security    otp-block    temp-password    type2
+    Navigate To Reset Password Page    email=${OTP_BLK_RTP_RETRY_EMAIL}    temp_password=${OTP_BLK_RTP_RETRY_TEMP_PW}
+    FOR    ${i}    IN RANGE    3
+        Trigger Unverified RTP Max-Attempts Session    temp_password=${OTP_BLK_RTP_RETRY_TEMP_PW}
+    END
+    Submit RTP Reset Form      temp_password=${OTP_BLK_RTP_RETRY_TEMP_PW}
+    Wait For Elements State    text=${ERR_OTP_SESSION_BLOCKED}    visible
+    Click                      ${MODAL_CONFIRM_BTN}
+    # Retry during the block → same error is shown again.
+    Submit RTP Reset Form      temp_password=${OTP_BLK_RTP_RETRY_TEMP_PW}
+    Wait For Elements State    text=${ERR_OTP_SESSION_BLOCKED}    visible
+
+t1.1.25 Reset Password – No Block When a Valid OTP Is Entered on the 5th Attempt of the 3rd Session
+    [Documentation]    Verify the user is NOT blocked when only 2 sessions are unverified and the 3rd
+    ...                session is verified — even if the valid OTP arrives on the 5th attempt. Enters
+    ...                4 invalid OTPs (${OTP_INVALID}) then the valid OTP (${OTP}) in session 3, and
+    ...                asserts the reset succeeds. REUSABLE: refresh ${OTP_BLK_RTP_VALID5_EMAIL}/_TEMP_PW
+    ...                each cycle — this test consumes the temp account (completes the reset).
+    [Tags]    reset-password    otp    security    otp-block    temp-password    type2
+    Navigate To Reset Password Page    email=${OTP_BLK_RTP_VALID5_EMAIL}    temp_password=${OTP_BLK_RTP_VALID5_TEMP_PW}
+    # 2 unverified sessions
+    FOR    ${i}    IN RANGE    2
+        Trigger Unverified RTP Max-Attempts Session    temp_password=${OTP_BLK_RTP_VALID5_TEMP_PW}
+    END
+    # Session 3: 4 invalid attempts, then a valid OTP on the 5th → success, no block.
+    Complete Reset Password Form    temp_password=${OTP_BLK_RTP_VALID5_TEMP_PW}    new_password=${OTP_BLK_NEW_PASSWORD}
+    FOR    ${i}    IN RANGE    4
+        Set RTP OTP And Continue    otp=${OTP_INVALID}
+        Wait For Elements State     text=${ERR_OTP_INVALID}    visible
+    END
+    Set RTP OTP And Continue    otp=${OTP}
+    Wait For Elements State     ${RESET_SUCCESS_MESSAGE}    visible
