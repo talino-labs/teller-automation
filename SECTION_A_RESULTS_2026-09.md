@@ -76,6 +76,14 @@ Completed with `jjavier+temp2` (magic OTP):
 OTP-session-block matrix across all three flows — Reset (t1.1.21/.22/.23/.25), Forgot
 (t1.3.21/.22/.23/.25), Change (t1.4.17/.18/.19/.21).
 
+**Now automated:** t2.5.19 and t5.3.36 (see above), plus the **12 OTP-block cases**
+are automated in the auth suites under the **`otp-block`** tag (reusable helper
+keywords + `OTP_BLK_*` account variables). They were dry-run-validated (12/12) and
+their live behavior was proven manually this cycle. Because each blocks its account
+for 60 min / resets its password, run them as a batch with fresh throwaway accounts:
+`bash run_july_regression.sh --tag otp-block` after refreshing the `OTP_BLK_*` values,
+clearing the network rate limit between accounts when prompted.
+
 **Only human-manual remainders** (real wall-clock waits, no account/app blocker):
 t1.1.24 / t1.1.26 / t1.3.24 / t1.3.26 / t1.4.20 / t1.4.22 — the 60-min-block-expiry and
 >15-min-window cases. Plus **t1.1.1** email-link entry (needs inbox), already verified
