@@ -290,3 +290,15 @@ t2.2.14 Navigate Back to Customers List
     Wait For Elements State    ${CUSTOMER_TABLE}          visible
     Wait For Elements State    ${CUSTOMER_SEARCH_FIELD}   visible
     Get Url                    contains    /dashboard/customers
+
+t2.2.15 Filter Account List by Status - Blocked
+    [Documentation]    Verify that filtering a customer's accounts by Blocked status shows only
+    ...                Blocked accounts (or a "No Data" message if none exist). Covers catalog
+    ...                TC t2.2.12 — the automated suite reuses t2.2.10-13 for the status-change
+    ...                tests, so the Blocked column filter is verified here.
+    [Tags]             customers    accounts    regression    type2
+    Click                      ${ACCOUNT_STATUS_FILTER}
+    Click                      ${FILTER_OPTION_BLOCKED}
+    Click                      ${FILTER_APPLY_BTN}
+    Wait For Elements State    ${ACCOUNT_TABLE}    visible
+    Filter Account Results Should Contain Only Status    Blocked
