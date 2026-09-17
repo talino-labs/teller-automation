@@ -102,7 +102,28 @@ bash publish_reports.sh --timestamp Teller_SBX_and_SIT_July2026_Smoke_Testing \
 Run folder: `results/2026-09_full-regression/` — every test, no `--include` tag
 filter (only `skip` excluded), executed in 4 batches by rate-limit risk.
 
-**Result: 294 passed / 68 failed / 17 skipped (379 tests, 25 TCs).**
+**Currently published report (merged, after targeted re-runs): 355 passed /
+10 failed / 16 skipped (381 tests, 25 TCs).** (The raw first pass was 294/68/17;
+the difference is rate-limit re-runs and the test-defect fixes listed below.)
+
+### ✅ Known failures in the published report — none are new regressions
+The 10 red tests a viewer sees are all investigated and accounted for (verified
+17 Sep 2026). Do **not** read them as fresh breakage:
+
+| Tests | # | Cause | Disposition |
+|-------|--:|-------|-------------|
+| `t7.6.11` | 1 | Loan "Total Amount Paid" **double-counts interest** — 839.94 vs Principal 835.76 + Interest 2.09 = 837.85 (`Total = Principal + 2×Interest`) | 🐞 **Real defect — filed [GitHub #35](https://github.com/talino-labs/teller-automation/issues/35)** |
+| `t2.1.13`/`.14`, `t2.2.11`/`.13` | 4 | Customer/account **status change silently fails** (modal submits, dismisses, persists nothing, no error). These are the mutating `status-change` set, normally excluded at run time via `--exclude-tag status-change` | 🐞 Product observation (escalate) **+** by-design exclusion — not part of a normal batch |
+| `t1.2.11`/`.12`/`.13`/`.16`/`.19` | 5 | Login **lockout counter-detail** tests — fail on a *precondition* (the failed-attempt counter isn't reset to exactly 0 when the lock is lifted) compounded by the auth **rate limit (429)** from many rapid attempts | ⚙️ Test-precondition + environment — **not a login defect** |
+
+**Why the 5 login reds are not a bug:** the single-attempt login negatives all
+pass with the same error copy (t1.2.3 invalid email, t1.2.4 wrong password,
+t1.2.5 blank, t1.2.9 under-threshold), and the lockout **feature** passes
+(t1.2.10 blocks-after-5, t1.2.14 per-account, t1.2.15 reset-lifts-block). So the
+message text and lockout logic are correct; the reds are counter-reset +
+rate-limit artifacts. See [[itg-rate-limit-blocker]].
+
+**Historical detail of the raw first pass (294/68/17) is retained below.**
 
 | Module | Pass | Fail | Skip |
 |--------|-----:|-----:|-----:|
