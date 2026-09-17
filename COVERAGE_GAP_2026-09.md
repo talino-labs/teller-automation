@@ -44,7 +44,8 @@ On inspection these are **not** coverage gaps — the automated suites cover the
 
 | Catalog TC | Reality |
 |-----------|---------|
-| t2.2.10, t2.2.12 | Exist as "Change Account Status to Dormant / Closed" — **excluded** on purpose (your separate status-change test set) |
+| t2.2.10 (Filter by Closed) | **Covered** — automated **t2.2.9** (Filter Account List by Status - Closed). *(The automated t2.2.10-13 are the status-change tests, hence the numbering divergence.)* |
+| t2.2.12 (Filter by Blocked) | **Now covered** — added automated **t2.2.15** (Filter by Blocked), PASS (17 Sep 2026). |
 | t3.1.12 (Filter by Blocked) | **Covered** — the automated suite has all 6 status filters as t3.1.6–11; Blocked = **t3.1.11** |
 | t3.1.13 (Filter by Suspended) | **Stale** — the app has **no "Suspended" status** (statuses are Active, Dormant, Frozen, Blocked, Deceased, Closed) |
 | t4.1.3 (View Specific Transaction Details) | **Covered** — same test exists as automated **t4.1.4** (suite renumbered after adding more type/status filters) |
@@ -76,6 +77,27 @@ The remaining **285** catalog test cases across modules t1.1–t1.4, t2.1–t2.5
 - The **User Management → "+ Create User"** flow (visible to Administrator/Super-Admin roles) is a **different feature** — it creates *system users* (Maker / Checker / Branch Manager), **not** a customer bank account, so it does not satisfy t3.3.
 
 **Conclusion:** t3.3 cannot be automated or executed until the account-onboarding feature is deployed and surfaced to a teller role. Track it as blocked, not as a missing test. Re-scope and build the suite once the wizard is live.
+
+## F. 🔎 Full catalog reconciliation (verified 17 Sep 2026)
+
+Every catalog TC ID (`t*.*.*`) was cross-checked against the actual execution records
+(the September automated `output.xml`s + this cycle's manual runs) to confirm nothing was
+left untested. **320 catalog TCs → 298 executed directly; the remaining 22 all fall into a
+known, accounted-for category — none were overlooked:**
+
+| Disposition | Count | TCs |
+|-------------|------:|-----|
+| ✅ Same test under different numbering — executed | 3 | t2.2.10 (=auto t2.2.9 Filter Closed), t3.1.12 (=auto t3.1.11 Filter Blocked), t4.1.3 (=auto t4.1.4 View Txn Details) |
+| ✅ Was a candidate gap — **now automated + PASS** | 1 | t2.2.12 Filter customer accounts by Blocked → new **t2.2.15** (PASS) |
+| ⚪ Stale — not applicable | 1 | t3.1.13 Filter by "Suspended" (no such status) |
+| 🚧 Blocked — feature not deployed | 8 | t3.3.1–t3.3.8 Create New Bank Account (Section E) |
+| 🕒 Human-manual — real wall-clock waits | 6 | t1.1.24/.26, t1.3.24/.26, t1.4.20/.22 (60-min-expiry / >15-min-window) |
+| 📧 Manual — needs inbox / live-OTP cooldown | 3 | t1.1.1 (reset via emailed link), t1.3.16 / t1.4.12 (new OTP after resend cooldown; resend itself is covered by auto t1.3.17 / t1.4.13) |
+
+**Conclusion:** no test case was accidentally left untested. The only items not executed are
+the 8 deployment-blocked (t3.3), the 6 wall-clock and 3 inbox/live-OTP manual cases — all
+documented and outside what the current build/automation can run. The one true candidate gap
+(t2.2.12) is now closed by automated **t2.2.15**.
 
 ## Recommended actions
 
