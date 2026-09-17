@@ -14,14 +14,14 @@ Manual execution of the "needs manual September execution" cases from
 | t1.3.23 | Forgot Password — blocked email keeps returning error during block | ✅ PASS | Manual |
 | t1.3.22 | Forgot Password — block via abandoned sessions | ✅ PASS | Manual (`jjavier+temp2`) |
 | t1.3.25 | Forgot Password — valid OTP on 5th attempt → not blocked | ✅ PASS | Manual (`jjavier+temp2`) |
-| t1.3.24 | Forgot Password — reset works after 60-min block expiry | 🕒 HUMAN-MANUAL | Real 60-min wait |
-| t1.3.26 | Forgot Password — 3 sessions spanning >15 min → no block | 🕒 HUMAN-MANUAL | Real 15-min staged waits |
+| t1.3.24 | Forgot Password — reset works after 60-min block expiry | ✅ PASS | Manual 17 Sep (`temp4`; blocked 10:01 → reset succeeded 11:03 after expiry) |
+| t1.3.26 | Forgot Password — 3 sessions spanning >15 min → no block | ✅ PASS | Manual 17 Sep (`temp2`; sessions 10:04/10:16/10:23 → S#4 not blocked) |
 | t1.1.21 | Reset Password — 60-min block after 3 unverified sessions | ✅ PASS | Manual, magic OTP `999999` (`jjavier+i1`) |
 | t1.1.23 | Reset Password — blocked email keeps returning error | ✅ PASS | Manual (timer 59→58) |
 | t1.1.22 | Reset Password — block via abandoned sessions | ✅ PASS | Manual (`jjavier+jc1`) |
 | t1.1.25 | Reset Password — valid OTP on 5th attempt → not blocked | ✅ PASS | Manual (`jjavier+cg1`) |
-| t1.1.24 | Reset Password — reset works after 60-min block expiry | 🕒 HUMAN-MANUAL | Real 60-min wait |
-| t1.1.26 | Reset Password — 3 sessions spanning >15 min → no block | 🕒 HUMAN-MANUAL | Real 15-min staged waits |
+| t1.1.24 | Reset Password — reset works after 60-min block expiry | ✅ PASS | Manual 17 Sep (`j1`; blocked 10:09 → reset succeeded 11:10 after expiry) |
+| t1.1.26 | Reset Password — 3 sessions spanning >15 min → no block | ✅ PASS | Manual 17 Sep (`s1`; sessions 10:14/10:25/10:32 → S#4 not blocked) |
 | t1.4.17 | Change Password — 60-min block after 3 unverified sessions | ✅ PASS | Manual (`jjavier+cg1`, logged in) |
 | t1.4.19 | Change Password — blocked email keeps returning error | ✅ PASS | Manual (timer 59→58) |
 | t1.4.18 | Change Password — block via abandoned sessions | ✅ PASS | Manual (`jjavier+temp4`) |
@@ -84,7 +84,9 @@ for 60 min / resets its password, run them as a batch with fresh throwaway accou
 `bash run_july_regression.sh --tag otp-block` after refreshing the `OTP_BLK_*` values,
 clearing the network rate limit between accounts when prompted.
 
-**Only human-manual remainders** (real wall-clock waits, no account/app blocker):
+**Wall-clock cases** (real waits, no account/app blocker) — **4 of 6 now executed & PASS**
+on 17 Sep 2026 via a human-paced pilot: **t1.3.24 / t1.3.26 (Forgot)** and **t1.1.24 /
+t1.1.26 (Reset)** all PASS. Remaining: **t1.4.20 / t1.4.22 (Change)**. Original note:
 t1.1.24 / t1.1.26 / t1.3.24 / t1.3.26 / t1.4.20 / t1.4.22 — the 60-min-block-expiry and
 >15-min-window cases. Plus **t1.1.1** email-link entry (needs inbox), already verified
 by equivalence otherwise.
