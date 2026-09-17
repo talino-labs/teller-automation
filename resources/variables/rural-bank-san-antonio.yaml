@@ -77,6 +77,33 @@ OTP_BLK_CP_VALID5_PW: "Password!1"
 # The new password these tests set (kept the same shape as the rest of the suite).
 OTP_BLK_NEW_PASSWORD: "Password!2"
 
+# ------------------------------------------------------------
+# WALL-CLOCK cases (t1.1.24/.26, t1.3.24/.26, t1.4.20/.22) — tag: wall-clock
+# These are automatable but LONG-RUNNING: they use real time to prove the
+# 60-minute block expiry (.24/.20) and the >15-minute session window (.26/.22).
+# No human, no inbox, no live OTP — only the magic OTPs + genuine waits below.
+# Run on-demand (NOT in the fast suite): `--include wall-clock`.
+# Like the other otp-block accounts, these BLOCK/consume their account each cycle,
+# so REFRESH the throwaway accounts before every run.
+#
+# Timing knobs (tune per environment; defaults proven manually on 17 Sep 2026):
+OTP_BLK_EXPIRY_WAIT: "3660s"     # 61 min — wait out the 60-min block (.24/.20)
+OTP_BLK_SESSION_GAP: "960s"      # 16 min — gap so 3 sessions span >15 min (.26/.22)
+#
+# Reset Password (t1.1) — TEMP-password accounts
+OTP_BLK_RTP_EXPIRY_EMAIL: "REFRESH_EMAIL"        # t1.1.24 reset after block expiry     (REFRESH)
+OTP_BLK_RTP_EXPIRY_TEMP_PW: "REFRESH_TEMP_PASSWORD"
+OTP_BLK_RTP_SPAN_EMAIL: "REFRESH_EMAIL"          # t1.1.26 3 sessions >15 min → no block (REFRESH)
+OTP_BLK_RTP_SPAN_TEMP_PW: "REFRESH_TEMP_PASSWORD"
+# Forgot Password (t1.3) — any existing account email
+OTP_BLK_FP_EXPIRY_EMAIL: "REFRESH_EMAIL"         # t1.3.24 reset after block expiry     (REFRESH)
+OTP_BLK_FP_SPAN_EMAIL: "REFRESH_EMAIL"           # t1.3.26 3 sessions >15 min → no block (REFRESH)
+# Change Password (t1.4) — accounts with a known current password
+OTP_BLK_CP_EXPIRY_EMAIL: "REFRESH_EMAIL"         # t1.4.20 change after block expiry    (REFRESH)
+OTP_BLK_CP_EXPIRY_PW: "Password!1"
+OTP_BLK_CP_SPAN_EMAIL: "REFRESH_EMAIL"           # t1.4.22 3 sessions >15 min → no block (REFRESH)
+OTP_BLK_CP_SPAN_PW: "Password!1"
+
 
 # ============================================================
 # Customer Data (t2.1, t2.2, t2.3)

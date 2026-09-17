@@ -568,3 +568,62 @@ t1.3.25 Forgot Password – No Block When a Valid OTP Is Entered on the 5th Atte
     Fill Text                   ${CONFIRM_NEW_PASSWORD_FIELD}   ${OTP_BLK_NEW_PASSWORD}
     Click                       ${RESET_PASSWORD_BTN}
     Wait For Elements State     ${RESET_SUCCESS_MESSAGE}    visible
+
+# ====================================================================
+# WALL-CLOCK OTP-BLOCK CASES (automatable, but LONG-RUNNING)
+# Run on-demand only: robot --include wall-clock ...
+# They need no human/inbox/live-OTP — only magic OTPs + real time.
+# ====================================================================
+
+t1.3.24 Forgot Password – Reset Succeeds After the 60-Minute Block Expires
+    [Documentation]    Verify that once an email is blocked (3 unverified max-attempts OTP sessions),
+    ...                the Forgot Password flow succeeds again after the 60-minute block window elapses.
+    ...                Triggers the block, waits out ${OTP_BLK_EXPIRY_WAIT}, then completes the reset
+    ...                with a valid OTP (${OTP}) → success message. Wall-clock: ~62 min.
+    ...                REUSABLE: refresh ${OTP_BLK_FP_EXPIRY_EMAIL} each cycle.
+    [Tags]    forgot-password    otp    security    wall-clock    slow    type2
+    # Phase 1 — trigger the 60-minute block (3 unverified sessions + a blocked 4th)
+    Navigate To Forgot Password Page
+    FOR    ${i}    IN RANGE    3
+        Trigger Unverified FP Max-Attempts Session    ${OTP_BLK_FP_EXPIRY_EMAIL}
+    END
+    Submit FP Email            ${OTP_BLK_FP_EXPIRY_EMAIL}
+    Wait For Elements State    text=${ERR_OTP_SESSION_BLOCKED}    visible
+    Close Browser
+    # Phase 2 — wait out the 60-minute block
+    Sleep                      ${OTP_BLK_EXPIRY_WAIT}
+    # Phase 3 — after expiry the reset completes normally with a valid OTP
+    Navigate To Forgot Password Page
+    Submit FP Email            ${OTP_BLK_FP_EXPIRY_EMAIL}
+    Wait For Elements State    ${FP_OTP_INPUT}    visible
+    Set FP OTP And Continue    otp=${OTP}
+    Wait For Elements State    ${NEW_PASSWORD_FIELD}    visible
+    Fill Text                  ${NEW_PASSWORD_FIELD}           ${OTP_BLK_NEW_PASSWORD}
+    Fill Text                  ${CONFIRM_NEW_PASSWORD_FIELD}   ${OTP_BLK_NEW_PASSWORD}
+    Click                      ${RESET_PASSWORD_BTN}
+    Wait For Elements State    ${RESET_SUCCESS_MESSAGE}    visible
+
+t1.3.26 Forgot Password – No Block When 3 Unverified Sessions Span More Than 15 Minutes
+    [Documentation]    Verify that 3 unverified OTP sessions do NOT block the email when they are
+    ...                spaced so that no 3 fall within a single 15-minute window. Runs a session,
+    ...                waits ${OTP_BLK_SESSION_GAP} between each, then confirms a 4th attempt reaches
+    ...                the OTP screen normally (no block error). Wall-clock: ~33 min.
+    ...                REUSABLE: refresh ${OTP_BLK_FP_SPAN_EMAIL} each cycle.
+    [Tags]    forgot-password    otp    security    wall-clock    slow    type2
+    # Session 1
+    Navigate To Forgot Password Page
+    Trigger Unverified FP Max-Attempts Session    ${OTP_BLK_FP_SPAN_EMAIL}
+    Close Browser
+    Sleep                      ${OTP_BLK_SESSION_GAP}
+    # Session 2 (>15 min after S1)
+    Navigate To Forgot Password Page
+    Trigger Unverified FP Max-Attempts Session    ${OTP_BLK_FP_SPAN_EMAIL}
+    Close Browser
+    Sleep                      ${OTP_BLK_SESSION_GAP}
+    # Session 3 (>15 min after S2)
+    Navigate To Forgot Password Page
+    Trigger Unverified FP Max-Attempts Session    ${OTP_BLK_FP_SPAN_EMAIL}
+    # 4th attempt → reaches the OTP screen (NOT blocked)
+    Submit FP Email            ${OTP_BLK_FP_SPAN_EMAIL}
+    Wait For Elements State    ${FP_OTP_INPUT}                  visible
+    Wait For Elements State    text=${ERR_OTP_SESSION_BLOCKED}    hidden

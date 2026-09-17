@@ -516,3 +516,59 @@ t1.4.21 Change Password – No Block When a Valid OTP Is Entered on the 5th Atte
     END
     Set CP OTP And Continue    otp=${OTP}
     Wait For Elements State    ${CP_SUCCESS_MESSAGE}    visible
+
+# ====================================================================
+# WALL-CLOCK OTP-BLOCK CASES (automatable, but LONG-RUNNING)
+# Run on-demand only: robot --include wall-clock ...
+# They need no human/inbox/live-OTP — only magic OTPs + real time.
+# ====================================================================
+
+t1.4.20 Change Password – Change Succeeds After the 60-Minute Block Expires
+    [Documentation]    Verify that once an email is blocked (3 unverified max-attempts OTP sessions),
+    ...                the Change Password flow succeeds again after the 60-minute block window elapses.
+    ...                Triggers the block, waits out ${OTP_BLK_EXPIRY_WAIT}, then completes the change
+    ...                with a valid OTP (${OTP}) → success message. Wall-clock: ~62 min.
+    ...                REUSABLE: refresh ${OTP_BLK_CP_EXPIRY_EMAIL}/_PW each cycle. Note: the account's
+    ...                password becomes ${OTP_BLK_NEW_PASSWORD} after this test.
+    [Tags]    change-password    otp    security    wall-clock    slow    type2
+    # Phase 1 — trigger the 60-minute block (3 unverified sessions + a blocked 4th)
+    Navigate To Change Password Page    email=${OTP_BLK_CP_EXPIRY_EMAIL}    password=${OTP_BLK_CP_EXPIRY_PW}
+    FOR    ${i}    IN RANGE    3
+        Trigger Unverified CP Max-Attempts Session    current_password=${OTP_BLK_CP_EXPIRY_PW}
+    END
+    Submit CP Form             current_password=${OTP_BLK_CP_EXPIRY_PW}
+    Wait For Elements State    text=${ERR_OTP_SESSION_BLOCKED}    visible
+    Close Browser
+    # Phase 2 — wait out the 60-minute block
+    Sleep                      ${OTP_BLK_EXPIRY_WAIT}
+    # Phase 3 — after expiry the change completes normally with a valid OTP
+    Navigate To Change Password Page    email=${OTP_BLK_CP_EXPIRY_EMAIL}    password=${OTP_BLK_CP_EXPIRY_PW}
+    Complete Change Password Form       current_password=${OTP_BLK_CP_EXPIRY_PW}    new_password=${OTP_BLK_NEW_PASSWORD}
+    Enter CP OTP And Continue           otp=${OTP}
+    Wait For Elements State             ${CP_SUCCESS_MESSAGE}    visible
+
+t1.4.22 Change Password – No Block When 3 Unverified Sessions Span More Than 15 Minutes
+    [Documentation]    Verify that 3 unverified OTP sessions do NOT block the email when they are
+    ...                spaced so that no 3 fall within a single 15-minute window. Runs a session,
+    ...                waits ${OTP_BLK_SESSION_GAP} between each (re-login each time, as the app
+    ...                session expires over the gap), then confirms a 4th attempt reaches the OTP
+    ...                screen normally (no block error). Wall-clock: ~33 min.
+    ...                REUSABLE: refresh ${OTP_BLK_CP_SPAN_EMAIL}/_PW each cycle.
+    [Tags]    change-password    otp    security    wall-clock    slow    type2
+    # Session 1
+    Navigate To Change Password Page    email=${OTP_BLK_CP_SPAN_EMAIL}    password=${OTP_BLK_CP_SPAN_PW}
+    Trigger Unverified CP Max-Attempts Session    current_password=${OTP_BLK_CP_SPAN_PW}
+    Close Browser
+    Sleep                      ${OTP_BLK_SESSION_GAP}
+    # Session 2 (>15 min after S1)
+    Navigate To Change Password Page    email=${OTP_BLK_CP_SPAN_EMAIL}    password=${OTP_BLK_CP_SPAN_PW}
+    Trigger Unverified CP Max-Attempts Session    current_password=${OTP_BLK_CP_SPAN_PW}
+    Close Browser
+    Sleep                      ${OTP_BLK_SESSION_GAP}
+    # Session 3 (>15 min after S2)
+    Navigate To Change Password Page    email=${OTP_BLK_CP_SPAN_EMAIL}    password=${OTP_BLK_CP_SPAN_PW}
+    Trigger Unverified CP Max-Attempts Session    current_password=${OTP_BLK_CP_SPAN_PW}
+    # 4th attempt → reaches the OTP screen (NOT blocked)
+    Submit CP Form             current_password=${OTP_BLK_CP_SPAN_PW}
+    Wait For Elements State    ${CP_OTP_INPUT}                  visible
+    Wait For Elements State    text=${ERR_OTP_SESSION_BLOCKED}    hidden

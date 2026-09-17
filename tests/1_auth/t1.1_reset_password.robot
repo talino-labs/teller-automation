@@ -560,3 +560,57 @@ t1.1.25 Reset Password – No Block When a Valid OTP Is Entered on the 5th Attem
     END
     Set RTP OTP And Continue    otp=${OTP}
     Wait For Elements State     ${RESET_SUCCESS_MESSAGE}    visible
+
+# ====================================================================
+# WALL-CLOCK OTP-BLOCK CASES (automatable, but LONG-RUNNING)
+# Run on-demand only: robot --include wall-clock ...
+# They need no human/inbox/live-OTP — only magic OTPs + real time.
+# ====================================================================
+
+t1.1.24 Reset Password – Reset Succeeds After the 60-Minute Block Expires
+    [Documentation]    Verify that once an email is blocked (3 unverified max-attempts OTP sessions),
+    ...                the Reset Password flow succeeds again after the 60-minute block window elapses.
+    ...                Triggers the block, waits out ${OTP_BLK_EXPIRY_WAIT}, then completes the reset
+    ...                with a valid OTP (${OTP}) → success modal. Wall-clock: ~62 min.
+    ...                REUSABLE: refresh ${OTP_BLK_RTP_EXPIRY_EMAIL}/_TEMP_PW each cycle.
+    [Tags]    reset-password    otp    security    wall-clock    slow    temp-password    type2
+    # Phase 1 — trigger the 60-minute block (3 unverified sessions + a blocked 4th)
+    Navigate To Reset Password Page    email=${OTP_BLK_RTP_EXPIRY_EMAIL}    temp_password=${OTP_BLK_RTP_EXPIRY_TEMP_PW}
+    FOR    ${i}    IN RANGE    3
+        Trigger Unverified RTP Max-Attempts Session    temp_password=${OTP_BLK_RTP_EXPIRY_TEMP_PW}
+    END
+    Submit RTP Reset Form      temp_password=${OTP_BLK_RTP_EXPIRY_TEMP_PW}
+    Wait For Elements State    text=${ERR_OTP_SESSION_BLOCKED}    visible
+    Close Browser
+    # Phase 2 — wait out the 60-minute block
+    Sleep                      ${OTP_BLK_EXPIRY_WAIT}
+    # Phase 3 — after expiry the reset completes normally with a valid OTP
+    Navigate To Reset Password Page    email=${OTP_BLK_RTP_EXPIRY_EMAIL}    temp_password=${OTP_BLK_RTP_EXPIRY_TEMP_PW}
+    Complete Reset Password Form       temp_password=${OTP_BLK_RTP_EXPIRY_TEMP_PW}    new_password=${OTP_BLK_NEW_PASSWORD}
+    Enter RTP OTP And Continue         otp=${OTP}
+    Wait For Elements State            ${RESET_SUCCESS_MESSAGE}    visible
+
+t1.1.26 Reset Password – No Block When 3 Unverified Sessions Span More Than 15 Minutes
+    [Documentation]    Verify that 3 unverified OTP sessions do NOT block the email when they are
+    ...                spaced so that no 3 fall within a single 15-minute window. Runs a session,
+    ...                waits ${OTP_BLK_SESSION_GAP} between each, then confirms a 4th attempt reaches
+    ...                the OTP screen normally (no block error). Wall-clock: ~33 min.
+    ...                REUSABLE: refresh ${OTP_BLK_RTP_SPAN_EMAIL}/_TEMP_PW each cycle.
+    [Tags]    reset-password    otp    security    wall-clock    slow    temp-password    type2
+    # Session 1
+    Navigate To Reset Password Page    email=${OTP_BLK_RTP_SPAN_EMAIL}    temp_password=${OTP_BLK_RTP_SPAN_TEMP_PW}
+    Trigger Unverified RTP Max-Attempts Session    temp_password=${OTP_BLK_RTP_SPAN_TEMP_PW}
+    Close Browser
+    Sleep                      ${OTP_BLK_SESSION_GAP}
+    # Session 2 (>15 min after S1)
+    Navigate To Reset Password Page    email=${OTP_BLK_RTP_SPAN_EMAIL}    temp_password=${OTP_BLK_RTP_SPAN_TEMP_PW}
+    Trigger Unverified RTP Max-Attempts Session    temp_password=${OTP_BLK_RTP_SPAN_TEMP_PW}
+    Close Browser
+    Sleep                      ${OTP_BLK_SESSION_GAP}
+    # Session 3 (>15 min after S2)
+    Navigate To Reset Password Page    email=${OTP_BLK_RTP_SPAN_EMAIL}    temp_password=${OTP_BLK_RTP_SPAN_TEMP_PW}
+    Trigger Unverified RTP Max-Attempts Session    temp_password=${OTP_BLK_RTP_SPAN_TEMP_PW}
+    # 4th attempt → reaches the OTP screen (NOT blocked)
+    Submit RTP Reset Form      temp_password=${OTP_BLK_RTP_SPAN_TEMP_PW}
+    Wait For Elements State    ${RTP_OTP_INPUT}                 visible
+    Wait For Elements State    text=${ERR_OTP_SESSION_BLOCKED}    hidden

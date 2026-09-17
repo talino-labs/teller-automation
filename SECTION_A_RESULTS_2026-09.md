@@ -86,10 +86,18 @@ clearing the network rate limit between accounts when prompted.
 
 **Wall-clock cases** (real waits, no account/app blocker) — **ALL 6 now executed & PASS**
 on 17 Sep 2026 via human-paced pilots: Forgot (t1.3.24/.26), Reset (t1.1.24/.26), and
-Change (t1.4.20/.22) — every 60-min-block-expiry and >15-min-window case PASS. Original note:
-t1.1.24 / t1.1.26 / t1.3.24 / t1.3.26 / t1.4.20 / t1.4.22 — the 60-min-block-expiry and
->15-min-window cases. Plus **t1.1.1** email-link entry (needs inbox), already verified
-by equivalence otherwise.
+Change (t1.4.20/.22) — every 60-min-block-expiry and >15-min-window case PASS.
+
+> **Now codified as automated Robot tests** (tag `wall-clock`, dry-run validated 6/6).
+> They use only magic OTPs + real `Sleep`s (no human/inbox/live-OTP), so next cycle they
+> run unattended — just long: `./run_july_regression.sh --tag wall-clock`. Refresh the
+> `OTP_BLK_*_EXPIRY_*` / `OTP_BLK_*_SPAN_*` throwaway accounts in the bank yaml first
+> (each run blocks/consumes its account). Timing knobs: `OTP_BLK_EXPIRY_WAIT` (61 min),
+> `OTP_BLK_SESSION_GAP` (16 min).
+
+Plus **t1.1.1** email-link entry — the reset flow is identical to automated t1.1.2, but
+arriving via the "RESET PASSWORD NOW" email link needs mailbox access, so that entry step
+stays human-manual (not automated; IMAP path deliberately not used).
 
 **Accounts consumed** (all throwaway, left blocked ~60 min and/or password-reset):
 `i1`, `jc1`, `cg1`→Password!1, `temp4`→Password!2, `temp2`→Password!2.

@@ -24,18 +24,28 @@ These were the "not in the automated run" cases. Status after the Section-A effo
 | Module | Test cases | Status |
 |--------|-----------|--------|
 | t1.1 Reset Password | t1.1.21 .22 .23 .25 | ✅ executed manually (PASS) — OTP-session 60-min block matrix |
-| t1.1 Reset Password | t1.1.1 | ✅ executed manually 17 Sep (PASS) — via emailed "RESET PASSWORD NOW" link |
-| t1.1 Reset Password | t1.1.24 · t1.1.26 | ✅ executed manually 17 Sep (PASS) — 60-min-expiry / >15-min-window |
+| t1.1 Reset Password | t1.1.1 | ✅ executed manually 17 Sep (PASS) — via emailed "RESET PASSWORD NOW" link (email-link entry stays human-manual) |
+| t1.1 Reset Password | t1.1.24 · t1.1.26 | ✅ PASS 17 Sep — **now codified as automated** (`wall-clock` tag) |
 | t1.3 Forgot Password | t1.3.21 .22 .23 .25 | ✅ executed manually (PASS) |
-| t1.3 Forgot Password | t1.3.24 · t1.3.26 | 🕒 human-manual (60-min / 15-min waits) |
+| t1.3 Forgot Password | t1.3.24 · t1.3.26 | ✅ PASS 17 Sep — **now codified as automated** (`wall-clock` tag) |
 | t1.4 Change Password | t1.4.17 .18 .19 .21 | ✅ executed manually (PASS) |
-| t1.4 Change Password | t1.4.20 · t1.4.22 | 🕒 human-manual (60-min / 15-min waits) |
+| t1.4 Change Password | t1.4.20 · t1.4.22 | ✅ PASS 17 Sep — **now codified as automated** (`wall-clock` tag) |
 | t2.5 Avail Savings Product | t2.5.19 | ✅ **now automated** (session-timeout; `slow` tag) |
 | t5.3 Create New Product | t5.3.36 | ✅ **now automated** (version→Deprecated; idempotent/reusable) |
 
 The OTP-session 60-min block feature is proven identically across all three password flows.
 The 6 wall-clock cases (`.24`/`.26` per flow) and t1.1.1's email-link entry are **all now
-executed & PASS (17 Sep)** — nothing there was an automation gap the app allows us to close.
+executed & PASS (17 Sep)**. The 6 wall-clock cases are **now codified as automated Robot
+tests** (tag `wall-clock`) — they need no human, inbox, or live OTP, only real time (magic
+OTPs + `Sleep`), so next cycle they run unattended:
+
+```bash
+./run_july_regression.sh --tag wall-clock      # or: robot --include wall-clock ...
+```
+
+They are kept out of the fast suite (long: ~62 min for `.24/.20`, ~33 min for `.26/.22`).
+Only t1.1.1's **email-link entry step** remains genuinely human-manual (needs mailbox access);
+the reset flow it exercises is otherwise identical to the automated t1.1.2.
 
 > **t3.3 Create New Bank Account** is **blocked**, not manually runnable yet. See Section E.
 
@@ -93,7 +103,7 @@ accounted-for category — none were overlooked:**
 | ✅ Was a candidate gap — **now automated + PASS** | 1 | t2.2.12 Filter customer accounts by Blocked → new **t2.2.15** (PASS) |
 | ⚪ Stale — not applicable | 1 | t3.1.13 Filter by "Suspended" (no such status) |
 | 🚧 Blocked — feature not deployed | 8 | t3.3.1–t3.3.8 Create New Bank Account (Section E) |
-| ✅ Human-manual — real wall-clock waits — **now executed & PASS (17 Sep)** | 6 | t1.1.24/.26, t1.3.24/.26, t1.4.20/.22 (60-min-expiry / >15-min-window) |
+| ✅ Wall-clock — **executed & PASS (17 Sep) + now codified as automated** (`wall-clock` tag) | 6 | t1.1.24/.26, t1.3.24/.26, t1.4.20/.22 (60-min-expiry / >15-min-window) |
 | ✅ Manual via emailed link — **now executed & PASS (17 Sep)** | 1 | t1.1.1 (reset via "RESET PASSWORD NOW" email link; recording captured) |
 | 📧 Manual — needs live-OTP cooldown | 2 | t1.3.16 / t1.4.12 (new OTP after resend cooldown; resend itself is covered by auto t1.3.17 / t1.4.13) |
 
