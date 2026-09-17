@@ -2317,7 +2317,7 @@ t5.1.13,Action – Archive Product – Confirmation Modal Appears,"1. Teller is 
 2. Click the Delete option within the Action menu for that product.","1. A confirmation modal or pop-up appears, prompting the Teller to confirm the deletion. 
 2. The confirmation message clearly identifies the product being deleted.
 ",,https://qa-jo.github.io/teller-automation/reports/2026-09_full-regression/,,Peach,9/10/26,
-t5.1.13,Action – Archive Product – Confirm Archive,"1. Teller is on the Products Module page Active Products tab. 
+t5.1.14,Action – Archive Product – Confirm Archive,"1. Teller is on the Products Module page Active Products tab. 
 2. The selected product is eligible for deletion.","1. Locate a product record. 
 2. Click the Delete option within the Action menu for that product.","1.  Product is removed from the Active Products list.
 2. Product is no longer available for new customer applications.",,https://qa-jo.github.io/teller-automation/reports/2026-09_full-regression/,rerun,Peach,9/10/26,

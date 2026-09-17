@@ -104,6 +104,17 @@ OTP_BLK_CP_EXPIRY_PW: "Password!1"
 OTP_BLK_CP_SPAN_EMAIL: "REFRESH_EMAIL"           # t1.4.22 3 sessions >15 min → no block (REFRESH)
 OTP_BLK_CP_SPAN_PW: "Password!1"
 
+# ------------------------------------------------------------
+# RESEND-COMPLETE cases (t1.3.16, t1.4.12) — tag: resend-complete
+# "User can request a new OTP after the cooldown" completed THROUGH the success
+# modal (the tail the combined t1.3.15-16 / t1.4.11-12 omit to avoid mutating the
+# shared TELLER/CP accounts). Fully automatable: ~61s cooldown + magic OTP 123456,
+# no live email. They CONSUME the account (set a new password), so use throwaway
+# accounts and REFRESH each cycle. Run on-demand: `--tag resend-complete`.
+RESEND_FP_EMAIL: "REFRESH_EMAIL"     # t1.3.16 forgot-password resend→success (REFRESH)
+RESEND_CP_EMAIL: "REFRESH_EMAIL"     # t1.4.12 change-password resend→success (REFRESH)
+RESEND_CP_PW: "Password!1"
+
 
 # ============================================================
 # Customer Data (t2.1, t2.2, t2.3)

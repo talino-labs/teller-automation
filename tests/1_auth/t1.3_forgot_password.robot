@@ -627,3 +627,32 @@ t1.3.26 Forgot Password – No Block When 3 Unverified Sessions Span More Than 1
     Submit FP Email            ${OTP_BLK_FP_SPAN_EMAIL}
     Wait For Elements State    ${FP_OTP_INPUT}                  visible
     Wait For Elements State    text=${ERR_OTP_SESSION_BLOCKED}    hidden
+
+# ====================================================================
+# RESEND-COMPLETE CASE (automatable, slow ~65s — no human/inbox/live-OTP)
+# Run on-demand: robot --include resend-complete ...
+# Completes the tail that t1.3.15-16 omits: resend → enter new OTP → success.
+# ====================================================================
+
+t1.3.16 Forgot Password – New OTP After Cooldown Completes the Reset
+    [Documentation]    Verify a user can request a NEW OTP after the 60-second cooldown and complete
+    ...                the Forgot Password reset with it → "Password has been changed successfully."
+    ...                The combined t1.3.15-16 stops at "new code sent"; this asserts the success tail
+    ...                using the magic-valid OTP (${OTP}) — no live email needed. Wall-clock: ~65s.
+    ...                REUSABLE: refresh ${RESEND_FP_EMAIL} each cycle (this resets its password).
+    [Tags]    forgot-password    otp    slow    password-reset    resend-complete    type2
+    Navigate To Forgot Password Page
+    Submit FP Email            ${RESEND_FP_EMAIL}
+    Wait For Elements State    ${FP_OTP_INPUT}    visible
+    # Wait out the 60s cooldown, then request a new OTP
+    Sleep                      65s
+    Wait For Elements State    ${FP_RESEND_BTN}    enabled    timeout=30s
+    Click                      ${FP_RESEND_BTN}
+    Wait For Elements State    ${FP_OTP_INPUT}    visible
+    # Enter the new (magic-valid) OTP and complete the reset → success
+    Set FP OTP And Continue    otp=${OTP}
+    Wait For Elements State    ${NEW_PASSWORD_FIELD}    visible
+    Fill Text                  ${NEW_PASSWORD_FIELD}           ${OTP_BLK_NEW_PASSWORD}
+    Fill Text                  ${CONFIRM_NEW_PASSWORD_FIELD}   ${OTP_BLK_NEW_PASSWORD}
+    Click                      ${RESET_PASSWORD_BTN}
+    Wait For Elements State    ${RESET_SUCCESS_MESSAGE}    visible

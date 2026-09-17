@@ -105,25 +105,27 @@ accounted-for category — none were overlooked:**
 | 🚧 Blocked — feature not deployed | 8 | t3.3.1–t3.3.8 Create New Bank Account (Section E) |
 | ✅ Wall-clock — **executed & PASS (17 Sep) + now codified as automated** (`wall-clock` tag) | 6 | t1.1.24/.26, t1.3.24/.26, t1.4.20/.22 (60-min-expiry / >15-min-window) |
 | ✅ Manual via emailed link — **now executed & PASS (17 Sep)** | 1 | t1.1.1 (reset via "RESET PASSWORD NOW" email link; recording captured) |
-| 📧 Manual — needs live-OTP cooldown | 2 | t1.3.16 / t1.4.12 (new OTP after resend cooldown; resend itself is covered by auto t1.3.17 / t1.4.13) |
+| ✅ Resend-after-cooldown — **already executed + now fully automated** | 2 | t1.3.16 / t1.4.12: resend mechanics run in the default suite via combined **t1.3.15-16 / t1.4.11-12** (type1); the success tail is now automated as new **t1.3.16 / t1.4.12** (tag `resend-complete`, magic OTP, ~61s, no live email) |
 
 **Conclusion:** no test case was accidentally left untested. The 6 wall-clock cases and
-t1.1.1 (emailed-link entry) are now executed & PASS (17 Sep). The only items still not run are
-the 8 deployment-blocked (t3.3) and 2 live-OTP-cooldown manual cases (t1.3.16 / t1.4.12, whose
-resend is already auto-covered) — all documented and outside what the current build/automation
-can run. The one true candidate gap (t2.2.12) is closed by automated **t2.2.15**.
+t1.1.1 (emailed-link entry) are executed & PASS (17 Sep), and t1.3.16 / t1.4.12 are now fully
+automated (`resend-complete`). **The only items not runnable are the 8 deployment-blocked t3.3
+cases** (feature not on ITG) and 1 stale non-applicable case (t3.1.13, no "Suspended" status);
+t3.1.12 / t4.1.3 are covered under renumbered auto tests. The one true candidate gap (t2.2.12)
+is closed by automated **t2.2.15**.
 
-> **Re-verified 17 Sep 2026 (post wall-clock codification):** diffed all catalog IDs against
-> the actual robot test IDs across `tests/**` (421 automated tests). 305 catalog IDs have a
-> same-numbered automated test; the remaining 14 unique IDs are exactly the accounted-for set
-> above (t3.3.1–8 blocked, t1.1.1 manual-PASS, t1.3.16/t1.4.12 live-OTP-manual, t3.1.13 stale,
-> and t3.1.12/t4.1.3 covered under renumbered auto tests t3.1.11/t4.1.4). The 6 wall-clock
-> cases now resolve to same-numbered automated tests, so they no longer appear as unmatched.
+> **Re-verified 17 Sep 2026 (post wall-clock + resend-complete codification):** diffed all
+> catalog IDs against the actual robot test IDs across `tests/**` (423 automated tests).
+> **308 of 320 catalog IDs now have a same-numbered automated test**; the remaining 12 are
+> exactly the accounted-for set above — t3.3.1–8 blocked, t1.1.1 manual-PASS, t3.1.13 stale,
+> and t3.1.12 / t4.1.3 covered under renumbered auto tests t3.1.11 / t4.1.4. The 6 wall-clock
+> cases and t1.3.16 / t1.4.12 now resolve to same-numbered automated tests (earlier they only
+> looked "missing" because `t1.3.15-16` / `t1.4.11-12` are hyphenated combined-test names).
 >
-> **Catalog data note (not a coverage gap):** `t5.1.13` is **duplicated** in the sheet — the
-> second row ("Archive Product – Confirm Archive") should be **t5.1.14**. Both are covered by
-> automation (t5.1.13 = modal-appears, t5.1.14 = confirm-archive). Fix the catalog numbering
-> when convenient; it does not affect coverage.
+> **Catalog data note — FIXED 17 Sep 2026:** the sheet's duplicate `t5.1.13` (the second row,
+> "Archive Product – Confirm Archive") was renumbered to **t5.1.14** in the working catalog
+> CSVs to match automation (t5.1.13 = modal-appears, t5.1.14 = confirm-archive). Apply the same
+> renumber to the master sheet when convenient.
 
 ## Recommended actions
 

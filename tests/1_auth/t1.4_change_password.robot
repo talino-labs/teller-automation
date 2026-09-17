@@ -572,3 +572,28 @@ t1.4.22 Change Password – No Block When 3 Unverified Sessions Span More Than 1
     Submit CP Form             current_password=${OTP_BLK_CP_SPAN_PW}
     Wait For Elements State    ${CP_OTP_INPUT}                  visible
     Wait For Elements State    text=${ERR_OTP_SESSION_BLOCKED}    hidden
+
+# ====================================================================
+# RESEND-COMPLETE CASE (automatable, slow ~61s — no human/inbox/live-OTP)
+# Run on-demand: robot --include resend-complete ...
+# Completes the tail that t1.4.11-12 omits: resend → enter new OTP → success.
+# ====================================================================
+
+t1.4.12 Change Password – New OTP After Cooldown Completes the Change
+    [Documentation]    Verify a user can request a NEW OTP after the 60-second cooldown and complete
+    ...                the Change Password with it → "Password has been changed successfully."
+    ...                The combined t1.4.11-12 stops at "new code sent"; this asserts the success tail
+    ...                using the magic-valid OTP (${OTP}) — no live email needed. Wall-clock: ~61s.
+    ...                REUSABLE: refresh ${RESEND_CP_EMAIL}/_PW each cycle (this changes its password
+    ...                to ${OTP_BLK_NEW_PASSWORD}).
+    [Tags]    change-password    otp    slow    password-reset    resend-complete    type2
+    Navigate To Change Password Page    email=${RESEND_CP_EMAIL}    password=${RESEND_CP_PW}
+    Complete Change Password Form       current_password=${RESEND_CP_PW}    new_password=${OTP_BLK_NEW_PASSWORD}
+    # Wait out the 60s cooldown, then request a new OTP
+    Sleep                      61s
+    Wait For Elements State    ${CP_OTP_RESEND_BTN}    enabled
+    Click                      ${CP_OTP_RESEND_BTN}
+    Wait For Elements State    ${CP_OTP_INPUT}    visible
+    # Enter the new (magic-valid) OTP and complete the change → success
+    Set CP OTP And Continue    otp=${OTP}
+    Wait For Elements State    ${CP_SUCCESS_MESSAGE}    visible
