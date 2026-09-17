@@ -26,8 +26,8 @@ Manual execution of the "needs manual September execution" cases from
 | t1.4.19 | Change Password — blocked email keeps returning error | ✅ PASS | Manual (timer 59→58) |
 | t1.4.18 | Change Password — block via abandoned sessions | ✅ PASS | Manual (`jjavier+temp4`) |
 | t1.4.21 | Change Password — valid OTP on 5th attempt → not blocked | ✅ PASS | Manual (`jjavier+temp4`) |
-| t1.4.20 | Change Password — reset works after 60-min block expiry | 🕒 HUMAN-MANUAL | Real 60-min wait |
-| t1.4.22 | Change Password — 3 sessions spanning >15 min → no block | 🕒 HUMAN-MANUAL | Real 15-min staged waits |
+| t1.4.20 | Change Password — reset works after 60-min block expiry | ✅ PASS | Manual 17 Sep (`temp4`; blocked 11:19 → change succeeded 12:20 after expiry) |
+| t1.4.22 | Change Password — 3 sessions spanning >15 min → no block | ✅ PASS | Manual 17 Sep (`j1`; sessions 11:22/11:30/11:40 → S#4 not blocked) |
 | t1.3.22 | Forgot Password — block via abandoned sessions | ✅ PASS | Manual (`jjavier+temp2`) |
 | t1.3.25 | Forgot Password — valid OTP on 5th attempt → not blocked | ✅ PASS | Manual (`jjavier+temp2`) |
 
@@ -84,9 +84,9 @@ for 60 min / resets its password, run them as a batch with fresh throwaway accou
 `bash run_july_regression.sh --tag otp-block` after refreshing the `OTP_BLK_*` values,
 clearing the network rate limit between accounts when prompted.
 
-**Wall-clock cases** (real waits, no account/app blocker) — **4 of 6 now executed & PASS**
-on 17 Sep 2026 via a human-paced pilot: **t1.3.24 / t1.3.26 (Forgot)** and **t1.1.24 /
-t1.1.26 (Reset)** all PASS. Remaining: **t1.4.20 / t1.4.22 (Change)**. Original note:
+**Wall-clock cases** (real waits, no account/app blocker) — **ALL 6 now executed & PASS**
+on 17 Sep 2026 via human-paced pilots: Forgot (t1.3.24/.26), Reset (t1.1.24/.26), and
+Change (t1.4.20/.22) — every 60-min-block-expiry and >15-min-window case PASS. Original note:
 t1.1.24 / t1.1.26 / t1.3.24 / t1.3.26 / t1.4.20 / t1.4.22 — the 60-min-block-expiry and
 >15-min-window cases. Plus **t1.1.1** email-link entry (needs inbox), already verified
 by equivalence otherwise.
