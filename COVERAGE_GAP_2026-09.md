@@ -113,6 +113,18 @@ the 8 deployment-blocked (t3.3) and 2 live-OTP-cooldown manual cases (t1.3.16 / 
 resend is already auto-covered) — all documented and outside what the current build/automation
 can run. The one true candidate gap (t2.2.12) is closed by automated **t2.2.15**.
 
+> **Re-verified 17 Sep 2026 (post wall-clock codification):** diffed all catalog IDs against
+> the actual robot test IDs across `tests/**` (421 automated tests). 305 catalog IDs have a
+> same-numbered automated test; the remaining 14 unique IDs are exactly the accounted-for set
+> above (t3.3.1–8 blocked, t1.1.1 manual-PASS, t1.3.16/t1.4.12 live-OTP-manual, t3.1.13 stale,
+> and t3.1.12/t4.1.3 covered under renumbered auto tests t3.1.11/t4.1.4). The 6 wall-clock
+> cases now resolve to same-numbered automated tests, so they no longer appear as unmatched.
+>
+> **Catalog data note (not a coverage gap):** `t5.1.13` is **duplicated** in the sheet — the
+> second row ("Archive Product – Confirm Archive") should be **t5.1.14**. Both are covered by
+> automation (t5.1.13 = modal-appears, t5.1.14 = confirm-archive). Fix the catalog numbering
+> when convenient; it does not affect coverage.
+
 ## Recommended actions
 
 1. **t3.3 Create New Bank Account — BLOCKED, no action possible yet.** The onboarding wizard is not deployed on ITG (Section E). Do **not** treat it as an open automation gap; revisit and automate once the feature ships. There are currently **no automatable coverage gaps**.
