@@ -1,6 +1,6 @@
 Test Case ID,Description,Pre-conditions,Steps Taken,Expected Output,,Actual Output,Comments,Tester,Date Tested,Version
 t1.1. Reset Password (First-Time Login),,,,,,,,,,
-t1.1.1,"Reset Password via clicking ""Reset Password Now"" link ","1. A new Teller App user has been created via HubOps and a temporary password was sent to the registered email.
+t1.1.1,"Reset Password via clicking ""Reset Password Now"" link ","1. A teller account (Maker/Checker) has been created via User Management using a Super Admin account, and a temporary password was sent to the registered email.
 2. The user has received the temporary password email and clicked the ""RESET PASSWORD NOW"" link.
 3. The user is redirected to the reset password screen.","1. Enter the temporary password via email
 2. Click on LOG IN button
@@ -10,7 +10,7 @@ t1.1.1,"Reset Password via clicking ""Reset Password Now"" link ","1. A new Tell
 6. Click on RESET PASSWORD button
 7 . Enter OTP received via email
 8. Click on CONTINUE","1. A modal is displayed with the message:
-""Success! Password has been changed successfully."" ",,,manual,Peach,4/21/26,
+""Success! Password has been changed successfully."" ",,"A modal is displayed with the message: ""Success! Password has been changed successfully."" (executed via the emailed ""RESET PASSWORD NOW"" link; screen recording captured)",manual,QA-Jo,9/17/26,
 t1.1.2,Reset Password via Logging in Using Temporary Password,"1. A new Teller App user has been created via HubOps and a temporary password was sent to the registered email.
 2. The user has received the temporary password email.
 3. The user is on the login page at:

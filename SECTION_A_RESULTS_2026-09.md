@@ -9,7 +9,7 @@ Manual execution of the "needs manual September execution" cases from
 |----|-------|--------|--------|
 | t2.5.19 | Session Timeout During Savings Availment Flow | ✅ PASS | Automated (implemented; was a `Skip`) |
 | t5.3.36 | Savings Product Version Update Creates Deprecated Version | ✅ PASS | Automated (implemented; idempotent/reusable) |
-| t1.1.1  | Reset Password via "Reset Password Now" link | 🟡 PARTIAL | Flow verified by equivalence; email-link step needs inbox |
+| t1.1.1  | Reset Password via "Reset Password Now" link | ✅ PASS | Manual 17 Sep (email-link entry; screen recording captured) |
 | t1.3.21 | Forgot Password — 60-min block after 3 unverified sessions (5 invalid attempts) | ✅ PASS | Manual, magic OTP `999999` |
 | t1.3.23 | Forgot Password — blocked email keeps returning error during block | ✅ PASS | Manual |
 | t1.3.22 | Forgot Password — block via abandoned sessions | ✅ PASS | Manual (`jjavier+temp2`) |
@@ -178,11 +178,16 @@ to confirm idempotency. New reusable keywords: `Open Active Product Edit Page`,
 > design — that is the feature under test). The interest rate is toggled between
 > `T536_INTEREST_RATE_A`/`_B` so the product stays sane and every run makes a real change.
 
-### t1.1.1 — Reset Password via "Reset Password Now" link 🟡 PARTIAL
-The temp-password → new-password → OTP reset flow was exercised end-to-end this
-session (on `jjavier+jr1`) and succeeded ("Password has been changed successfully").
-The only unverified nuance specific to t1.1.1 is arriving via the **email link**,
-which needs inbox access.
+### t1.1.1 — Reset Password via "Reset Password Now" link ✅ PASS
+Executed manually end-to-end on **17 Sep 2026** via the actual **"RESET PASSWORD NOW"**
+email link (screen recording captured). Temp-password → LOG IN → new-password ×2 →
+RESET PASSWORD → OTP → CONTINUE reached the success modal
+**"Success! Password has been changed successfully."** — expected result met.
+
+> Pre-condition note: under the current build the account under test (a teller
+> role — Maker/Checker) is created via **User Management using a Super Admin
+> account**, which issues the temp password + "RESET PASSWORD NOW" email. The old
+> HubOps provisioning path no longer applies.
 
 ### OTP-session 60-minute block sets (t1.1.21–26, t1.3.21–26, t1.4.17–22) ⏳
 Being executed manually using backend magic OTP values

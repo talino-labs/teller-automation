@@ -24,7 +24,8 @@ These were the "not in the automated run" cases. Status after the Section-A effo
 | Module | Test cases | Status |
 |--------|-----------|--------|
 | t1.1 Reset Password | t1.1.21 .22 .23 .25 | ✅ executed manually (PASS) — OTP-session 60-min block matrix |
-| t1.1 Reset Password | t1.1.1 · t1.1.24 · t1.1.26 | 🕒 human-manual (email-link needs inbox; .24/.26 need real 60-min/15-min waits) |
+| t1.1 Reset Password | t1.1.1 | ✅ executed manually 17 Sep (PASS) — via emailed "RESET PASSWORD NOW" link |
+| t1.1 Reset Password | t1.1.24 · t1.1.26 | ✅ executed manually 17 Sep (PASS) — 60-min-expiry / >15-min-window |
 | t1.3 Forgot Password | t1.3.21 .22 .23 .25 | ✅ executed manually (PASS) |
 | t1.3 Forgot Password | t1.3.24 · t1.3.26 | 🕒 human-manual (60-min / 15-min waits) |
 | t1.4 Change Password | t1.4.17 .18 .19 .21 | ✅ executed manually (PASS) |
@@ -33,8 +34,8 @@ These were the "not in the automated run" cases. Status after the Section-A effo
 | t5.3 Create New Product | t5.3.36 | ✅ **now automated** (version→Deprecated; idempotent/reusable) |
 
 The OTP-session 60-min block feature is proven identically across all three password flows.
-Only the 6 wall-clock cases (`.24`/`.26` per flow) plus t1.1.1's email-link entry remain
-human-manual — nothing there is an automation gap the app allows us to close.
+The 6 wall-clock cases (`.24`/`.26` per flow) and t1.1.1's email-link entry are **all now
+executed & PASS (17 Sep)** — nothing there was an automation gap the app allows us to close.
 
 > **t3.3 Create New Bank Account** is **blocked**, not manually runnable yet. See Section E.
 
@@ -82,8 +83,9 @@ The remaining **285** catalog test cases across modules t1.1–t1.4, t2.1–t2.5
 
 Every catalog TC ID (`t*.*.*`) was cross-checked against the actual execution records
 (the September automated `output.xml`s + this cycle's manual runs) to confirm nothing was
-left untested. **320 catalog TCs → 298 executed directly; the remaining 22 all fall into a
-known, accounted-for category — none were overlooked:**
+left untested. **320 catalog TCs → 305 executed (298 automated/earlier-manual + 7 executed
+manually 17 Sep: the 6 wall-clock cases + t1.1.1); the remaining 15 all fall into a known,
+accounted-for category — none were overlooked:**
 
 | Disposition | Count | TCs |
 |-------------|------:|-----|
@@ -91,13 +93,15 @@ known, accounted-for category — none were overlooked:**
 | ✅ Was a candidate gap — **now automated + PASS** | 1 | t2.2.12 Filter customer accounts by Blocked → new **t2.2.15** (PASS) |
 | ⚪ Stale — not applicable | 1 | t3.1.13 Filter by "Suspended" (no such status) |
 | 🚧 Blocked — feature not deployed | 8 | t3.3.1–t3.3.8 Create New Bank Account (Section E) |
-| 🕒 Human-manual — real wall-clock waits | 6 | t1.1.24/.26, t1.3.24/.26, t1.4.20/.22 (60-min-expiry / >15-min-window) |
-| 📧 Manual — needs inbox / live-OTP cooldown | 3 | t1.1.1 (reset via emailed link), t1.3.16 / t1.4.12 (new OTP after resend cooldown; resend itself is covered by auto t1.3.17 / t1.4.13) |
+| ✅ Human-manual — real wall-clock waits — **now executed & PASS (17 Sep)** | 6 | t1.1.24/.26, t1.3.24/.26, t1.4.20/.22 (60-min-expiry / >15-min-window) |
+| ✅ Manual via emailed link — **now executed & PASS (17 Sep)** | 1 | t1.1.1 (reset via "RESET PASSWORD NOW" email link; recording captured) |
+| 📧 Manual — needs live-OTP cooldown | 2 | t1.3.16 / t1.4.12 (new OTP after resend cooldown; resend itself is covered by auto t1.3.17 / t1.4.13) |
 
-**Conclusion:** no test case was accidentally left untested. The only items not executed are
-the 8 deployment-blocked (t3.3), the 6 wall-clock and 3 inbox/live-OTP manual cases — all
-documented and outside what the current build/automation can run. The one true candidate gap
-(t2.2.12) is now closed by automated **t2.2.15**.
+**Conclusion:** no test case was accidentally left untested. The 6 wall-clock cases and
+t1.1.1 (emailed-link entry) are now executed & PASS (17 Sep). The only items still not run are
+the 8 deployment-blocked (t3.3) and 2 live-OTP-cooldown manual cases (t1.3.16 / t1.4.12, whose
+resend is already auto-covered) — all documented and outside what the current build/automation
+can run. The one true candidate gap (t2.2.12) is closed by automated **t2.2.15**.
 
 ## Recommended actions
 
