@@ -137,4 +137,4 @@ is closed by automated **t2.2.15**.
 
 4. **Add catalog rows for t2.6 and t7.1–t7.6** (Section C) so the sheet reflects what September actually ran.
 
-4. **Update the catalog's report links/dates** from the April `pvillados-nmblr` links to the September run: `https://qa-jo.github.io/teller-automation/reports/2026-09_full-regression/`
+4. **Update the catalog's report links/dates** from the April `pvillados-nmblr` links to the September run: `https://talino-labs.github.io/teller-automation/reports/2026-09_full-regression/`

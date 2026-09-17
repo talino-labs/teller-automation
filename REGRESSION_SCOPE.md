@@ -1,6 +1,6 @@
 # 2026-07 Regression — Pre-deployment to SBX
 
-Published results: https://qa-jo.github.io/teller-automation/
+Published results: https://talino-labs.github.io/teller-automation/
 (run: `2026-07_regression-pre-deployment-to-sbx`)
 
 ## In scope — executed, all passing (21 TCs)
@@ -26,7 +26,7 @@ Regression testing for them was done last **June 2026** (see the `2026-06-02_reg
 
 # Teller SBX + SIT July 2026 Smoke Testing
 
-Published results: https://qa-jo.github.io/teller-automation/
+Published results: https://talino-labs.github.io/teller-automation/
 (run: `Teller_SBX_and_SIT_July2026_Smoke_Testing`, one sub-folder per bank)
 
 Per-bank smoke run across SBX/SIT environments. Auth (t1.2–t1.4) is included;

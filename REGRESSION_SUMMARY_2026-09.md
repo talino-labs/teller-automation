@@ -2,7 +2,7 @@
 
 **Environment:** rural-bank-san-antonio (ITG)
 **Run folder:** `results/2026-09_full-regression/`
-**Published report:** https://qa-jo.github.io/teller-automation/reports/2026-09_full-regression/
+**Published report:** https://talino-labs.github.io/teller-automation/reports/2026-09_full-regression/
 
 ## Overall
 **352 passed / 10 failed / 17 skipped** (379 tests across 25 test-case files).

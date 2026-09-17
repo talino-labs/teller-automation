@@ -7,13 +7,13 @@
 #   bash publish_reports.sh --timestamp 2026-04-20_10-30-00
 #
 # Reports are published to the gh-pages branch and served at:
-#   https://pvillados-nmblr.github.io/teller-automation/
+#   https://talino-labs.github.io/teller-automation/
 # ============================================================
 
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")" && pwd)"
-PAGES_URL="https://qa-jo.github.io/teller-automation"
+PAGES_URL="https://talino-labs.github.io/teller-automation"
 WORKTREE_PATH="/tmp/gh-pages-work"
 
 RED='\033[0;31m'
