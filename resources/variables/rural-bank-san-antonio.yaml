@@ -469,33 +469,55 @@ T76_STATIC_EXPECTED_AMORT: "1,010.88"
 T76_STATIC_EMPTY_LOAN: "7710361059757626"
 # ============================================================
 # t8.1 — Interest Crediting
+# ------------------------------------------------------------
+# STATUS: BLOCKED (by design) — savings-interest crediting is intentionally
+# DISABLED on ITG under RFC-1722 (per-DFSP EOD rework). prodmgmt commit ea60dae
+# ("disable legacy savings", PR #74, merged 2026-08-14) no-ops SavingsInterestService
+# and comments out the midnight scheduler (0 0 0 * * *). Last ITG credit: 17 Aug 2026.
+# Crediting resumes with the per-DFSP EOD infra: talino-labs/higala-prodmgmt-api#92
+# (open; blocked on higala-microledger#190 + higala-jison#125). Not a product defect.
+# Computation tests (t8.1.2–.5, .8–.10, .13) can't be validated until crediting
+# resumes; structural tests (t8.1.6/.7) run against existing records.
+#
+# CADENCE IS PER-PRODUCT CONFIG — product.interestConfiguration.interest.timePeriod:
+#   daily   → balance × (rate/100) / 365   (credited every day)
+#   monthly → balance × (rate/100) / 12    (credited on the 1st of the month)
+# Set each scenario's *_TIMEPERIOD to the product it runs against; the suite computes
+# the expected amount from balance/rate/timePeriod at runtime (Compute Expected
+# Interest) — no hardcoded daily-only expected values.
 # ============================================================
 
-# Product A (2% rate) — standard savings product
+# Product A — standard savings product
 T81_PRODUCT_A_RATE: "2"
-T81_PRODUCT_A_CUSTOMER_NAME: ""        # TODO: customer under Product A with ₱50,000 balance
+T81_PRODUCT_A_BALANCE: "50000"
+T81_PRODUCT_A_TIMEPERIOD: "daily"      # daily | monthly — match the product's configured timePeriod
+T81_PRODUCT_A_CUSTOMER_NAME: ""        # TODO: customer under Product A with the balance above
 T81_PRODUCT_A_ACCOUNT_NO: ""           # TODO: account number under Product A
-T81_PRODUCT_A_EXPECTED_INTEREST: "2.74"  # 50,000 × (2/100/365)
 
-# Product B — NOTE: no 5% product exists in this tenant. Pointed at a real
-# account that HAS credited Savings-Interest records so the structural history/
-# detail tests (t8.1.6/.7) can run. Amount-based/daily-computation tests still
-# need a purpose-built daily-interest account — the system credits MONTHLY ~2%
-# (verified), not daily as t8.1 assumes. See ESCALATIONS/scope notes.
+# Product B — NOTE: no 5% product exists in this tenant yet. The account below HAS
+# Savings-Interest records so the STRUCTURAL tests (t8.1.6/.7) run, but it is a
+# MONTHLY ~2% product — not the daily 5% the computation tests intend (which is why
+# the old daily expected 6.85 never matched). Create the 5% product + account, set
+# its balance/timePeriod here, and repoint the account number.
 T81_PRODUCT_B_RATE: "5"
-T81_PRODUCT_B_CUSTOMER_NAME: "Jace Amban"                 # real acct with interest records
-T81_PRODUCT_B_ACCOUNT_NO: "7710373294475998"             # Active; credited 455.87 (monthly ~2%)
-T81_PRODUCT_B_EXPECTED_INTEREST: "6.85"  # 50,000 × (5/100/365) — unmatched (see note)
+T81_PRODUCT_B_BALANCE: "50000"
+T81_PRODUCT_B_TIMEPERIOD: "daily"      # intended product is daily 5%; the real acct below is monthly ~2%
+T81_PRODUCT_B_CUSTOMER_NAME: "Jace Amban"                 # real acct with interest records (monthly ~2%)
+T81_PRODUCT_B_ACCOUNT_NO: "7710373294475998"             # Active; structural t8.1.6/.7 only until 5% acct exists
 
-# High-balance account (₱1,000,000.00 under Product B, 5%)
+# High-balance account (₱1,000,000.00 under Product B)
+T81_HIGH_BAL_RATE: "5"
+T81_HIGH_BAL_BALANCE: "1000000"
+T81_HIGH_BAL_TIMEPERIOD: "daily"
 T81_HIGH_BAL_CUSTOMER_NAME: ""         # TODO: customer with ₱1,000,000 balance under Product B
 T81_HIGH_BAL_ACCOUNT_NO: ""            # TODO: account number
-T81_HIGH_BAL_EXPECTED_INTEREST: "136.99"  # 1,000,000 × (5/100/365)
 
-# Minimum-threshold account (₱73.00 under Product B, 5%)
+# Minimum-threshold account (₱73.00 under Product B)
+T81_MIN_BAL_RATE: "5"
+T81_MIN_BAL_BALANCE: "73"
+T81_MIN_BAL_TIMEPERIOD: "daily"
 T81_MIN_BAL_CUSTOMER_NAME: ""          # TODO: customer with ₱73.00 balance under Product B
 T81_MIN_BAL_ACCOUNT_NO: ""             # TODO: account number
-T81_MIN_BAL_EXPECTED_INTEREST: "0.01"  # 73 × (5/100/365) = 0.00999... → ₱0.01
 
 # Below-threshold account (₱72.99 under Product B, 5%) — no interest expected
 T81_BELOW_MIN_CUSTOMER_NAME: ""        # TODO: customer with ₱72.99 balance under Product B

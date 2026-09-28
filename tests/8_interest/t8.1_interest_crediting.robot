@@ -1,11 +1,22 @@
 *** Settings ***
 Documentation       t8.1 Interest Crediting
-...                 Covers automated daily interest crediting job behavior,
-...                 computation accuracy across savings products, transaction
-...                 record verification, and edge-case account scenarios.
+...                 Covers the automated interest crediting job, computation accuracy
+...                 across savings products, transaction record verification, and
+...                 edge-case account scenarios.
 ...
-...                 Prerequisites:
-...                 - The 12:00 AM interest crediting job has already run for today.
+...                 Cadence is PER-PRODUCT config (interestConfiguration.interest.timePeriod):
+...                 daily = balance × (rate/100)/365; monthly = balance × (rate/100)/12.
+...                 Computation tests derive the expected amount from each account's
+...                 balance/rate/timePeriod (Compute Expected Interest) — they do NOT
+...                 assume daily. Set each scenario's *_TIMEPERIOD in the variables file.
+...
+...                 STATUS: BLOCKED (by design) — savings-interest crediting is intentionally
+...                 disabled on ITG under RFC-1722 (prodmgmt commit ea60dae / PR #74); it
+...                 resumes with the per-DFSP EOD infra (prodmgmt-api#92). Computation tests
+...                 can't be validated until then; structural tests (t8.1.6/.7) still run.
+...
+...                 Prerequisites (once crediting resumes):
+...                 - The crediting job has already run for the period under test.
 ...                 - All TODO variables in rural-bank-san-antonio.yaml must be filled
 ...                   before running T8.1.2–T8.1.5 and T8.1.8–T8.1.17.
 
@@ -39,7 +50,8 @@ t8.1.2 Daily interest is correctly computed and credited — Product A (Rate: 2%
     Navigate To Account Transactions    ${T81_PRODUCT_A_ACCOUNT_NO}
     Reload
     Wait For Load Spinner To Disappear
-    Verify Today Interest Credit    ${T81_PRODUCT_A_EXPECTED_INTEREST}
+    ${expected}=    Compute Expected Interest    ${T81_PRODUCT_A_BALANCE}    ${T81_PRODUCT_A_RATE}    ${T81_PRODUCT_A_TIMEPERIOD}
+    Verify Today Interest Credit    ${expected}
 
 t8.1.3 Daily interest is correctly computed and credited — Product B (Rate: 5%)
     [Documentation]    Verify Account B (Product B, 5% rate, ₱50,000 balance) is credited ₱6.85.
@@ -50,7 +62,8 @@ t8.1.3 Daily interest is correctly computed and credited — Product B (Rate: 5%
     Navigate To Account Transactions    ${T81_PRODUCT_B_ACCOUNT_NO}
     Reload
     Wait For Load Spinner To Disappear
-    Verify Today Interest Credit    ${T81_PRODUCT_B_EXPECTED_INTEREST}
+    ${expected}=    Compute Expected Interest    ${T81_PRODUCT_B_BALANCE}    ${T81_PRODUCT_B_RATE}    ${T81_PRODUCT_B_TIMEPERIOD}
+    Verify Today Interest Credit    ${expected}
 
 t8.1.4 Both Product A (2%) and Product B (5%) accounts are credited correctly in the same job run
     [Documentation]    Verify Product A account receives ₱2.74 and Product B receives ₱6.85 in
@@ -62,12 +75,14 @@ t8.1.4 Both Product A (2%) and Product B (5%) accounts are credited correctly in
     Navigate To Account Transactions    ${T81_PRODUCT_A_ACCOUNT_NO}
     Reload
     Wait For Load Spinner To Disappear
-    Verify Today Interest Credit    ${T81_PRODUCT_A_EXPECTED_INTEREST}
+    ${expected}=    Compute Expected Interest    ${T81_PRODUCT_A_BALANCE}    ${T81_PRODUCT_A_RATE}    ${T81_PRODUCT_A_TIMEPERIOD}
+    Verify Today Interest Credit    ${expected}
     # Verify Product B
     Navigate To Account Transactions    ${T81_PRODUCT_B_ACCOUNT_NO}
     Reload
     Wait For Load Spinner To Disappear
-    Verify Today Interest Credit    ${T81_PRODUCT_B_EXPECTED_INTEREST}
+    ${expected}=    Compute Expected Interest    ${T81_PRODUCT_B_BALANCE}    ${T81_PRODUCT_B_RATE}    ${T81_PRODUCT_B_TIMEPERIOD}
+    Verify Today Interest Credit    ${expected}
 
 t8.1.5 All eligible accounts across both savings products are processed in a single job run
     [Documentation]    Verify every eligible account is credited with the correct product-specific
@@ -78,11 +93,13 @@ t8.1.5 All eligible accounts across both savings products are processed in a sin
     Navigate To Account Transactions    ${T81_PRODUCT_A_ACCOUNT_NO}
     Reload
     Wait For Load Spinner To Disappear
-    Verify Today Interest Credit    ${T81_PRODUCT_A_EXPECTED_INTEREST}
+    ${expected}=    Compute Expected Interest    ${T81_PRODUCT_A_BALANCE}    ${T81_PRODUCT_A_RATE}    ${T81_PRODUCT_A_TIMEPERIOD}
+    Verify Today Interest Credit    ${expected}
     Navigate To Account Transactions    ${T81_PRODUCT_B_ACCOUNT_NO}
     Reload
     Wait For Load Spinner To Disappear
-    Verify Today Interest Credit    ${T81_PRODUCT_B_EXPECTED_INTEREST}
+    ${expected}=    Compute Expected Interest    ${T81_PRODUCT_B_BALANCE}    ${T81_PRODUCT_B_RATE}    ${T81_PRODUCT_B_TIMEPERIOD}
+    Verify Today Interest Credit    ${expected}
 
 t8.1.6 Credited interest is reflected in the transaction history with correct details
     [Documentation]    Verify the interest credit transaction record in the account history contains:
@@ -164,7 +181,8 @@ t8.1.8 Balance update is net-based and no tax is deducted from the credited inte
     Navigate To Account Transactions    ${T81_PRODUCT_B_ACCOUNT_NO}
     Reload
     Wait For Load Spinner To Disappear
-    Verify Today Interest Credit    ${T81_PRODUCT_B_EXPECTED_INTEREST}
+    ${expected}=    Compute Expected Interest    ${T81_PRODUCT_B_BALANCE}    ${T81_PRODUCT_B_RATE}    ${T81_PRODUCT_B_TIMEPERIOD}
+    Verify Today Interest Credit    ${expected}
 
 t8.1.9 Interest is correctly computed for a high-balance account (₱1,000,000.00) under Product B (5%)
     [Documentation]    Verify high-balance account is credited ₱136.99 without overflow or truncation.
@@ -174,7 +192,8 @@ t8.1.9 Interest is correctly computed for a high-balance account (₱1,000,000.0
     Navigate To Account Transactions    ${T81_HIGH_BAL_ACCOUNT_NO}
     Reload
     Wait For Load Spinner To Disappear
-    Verify Today Interest Credit    ${T81_HIGH_BAL_EXPECTED_INTEREST}
+    ${expected}=    Compute Expected Interest    ${T81_HIGH_BAL_BALANCE}    ${T81_HIGH_BAL_RATE}    ${T81_HIGH_BAL_TIMEPERIOD}
+    Verify Today Interest Credit    ${expected}
 
 t8.1.10 Interest is credited correctly for a minimum-interest balance (₱73.00) under Product B (5%)
     [Documentation]    Verify minimum-threshold account (₱73.00) is credited ₱0.01.
@@ -184,7 +203,8 @@ t8.1.10 Interest is credited correctly for a minimum-interest balance (₱73.00)
     Navigate To Account Transactions    ${T81_MIN_BAL_ACCOUNT_NO}
     Reload
     Wait For Load Spinner To Disappear
-    Verify Today Interest Credit    ${T81_MIN_BAL_EXPECTED_INTEREST}
+    ${expected}=    Compute Expected Interest    ${T81_MIN_BAL_BALANCE}    ${T81_MIN_BAL_RATE}    ${T81_MIN_BAL_TIMEPERIOD}
+    Verify Today Interest Credit    ${expected}
 
 t8.1.11 Interest crediting on a leap year date uses 365 as the divisor, not 366
     [Documentation]    Verify the interest formula always uses divisor 365, even on Feb 29.
@@ -207,11 +227,13 @@ t8.1.13 Accounts under Product A (2%) and Product B (5%) retain their own rates 
     Navigate To Account Transactions    ${T81_PRODUCT_A_ACCOUNT_NO}
     Reload
     Wait For Load Spinner To Disappear
-    Verify Today Interest Credit    ${T81_PRODUCT_A_EXPECTED_INTEREST}
+    ${expected}=    Compute Expected Interest    ${T81_PRODUCT_A_BALANCE}    ${T81_PRODUCT_A_RATE}    ${T81_PRODUCT_A_TIMEPERIOD}
+    Verify Today Interest Credit    ${expected}
     Navigate To Account Transactions    ${T81_PRODUCT_B_ACCOUNT_NO}
     Reload
     Wait For Load Spinner To Disappear
-    Verify Today Interest Credit    ${T81_PRODUCT_B_EXPECTED_INTEREST}
+    ${expected}=    Compute Expected Interest    ${T81_PRODUCT_B_BALANCE}    ${T81_PRODUCT_B_RATE}    ${T81_PRODUCT_B_TIMEPERIOD}
+    Verify Today Interest Credit    ${expected}
 
 t8.1.14 No interest is credited for a balance below the minimum threshold (< ₱73.00) under Product B (5%)
     [Documentation]    Verify account with ₱72.99 (below minimum threshold) receives no interest.
@@ -255,6 +277,20 @@ t8.1.17 No interest is credited when the savings product has an interest rate of
 
 
 *** Keywords ***
+Compute Expected Interest
+    [Documentation]    Returns the expected interest for one crediting run, computed per the
+    ...                product's configured timePeriod (dev-confirmed, RFC-1722 engine):
+    ...                  daily   → balance × (rate/100) / 365
+    ...                  monthly → balance × (rate/100) / 12
+    ...                Rounded to 2 decimals. Replaces the old daily-only hardcoded expected
+    ...                values so the assertion follows the product config, not an assumption.
+    [Arguments]    ${balance}    ${rate}    ${timeperiod}=daily
+    ${tp}=        Evaluate    "${timeperiod}".strip().lower()
+    ${divisor}=   Set Variable If    '${tp}' == 'monthly'    ${12}    ${365}
+    ${amount}=    Evaluate    round(float(${balance}) * (float(${rate}) / 100) / ${divisor}, 2)
+    ${formatted}=    Evaluate    f"{${amount}:.2f}"
+    RETURN    ${formatted}
+
 Verify Today Interest Credit
     [Documentation]    Filters by Savings Interest type and verifies a transaction row exists
     ...                containing the expected interest amount as the credit.
