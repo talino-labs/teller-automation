@@ -46,9 +46,9 @@ Of the 10 failures: **1** is a confirmed product defect, **4** are a product def
 
 ### Confirmed product defect — filed
 1. **Loan payment "Total Amount Paid" double-counts interest** — `t7.6.11`
-   Total = Principal + 2×Interest (839.94 vs expected 837.85). → GitHub [#35](https://github.com/QA-Jo/teller-automation/issues/35)
+   Total = Principal + 2×Interest (839.94 vs expected 837.85). → GitHub [project#1969](https://github.com/talino-labs/higala.project/issues/1969)
 2. **Transaction detail returns errored/empty payload for older records** — `t2.3.4` / `t3.2.4`
-   Older transactions show Type `ERR - N/A` / all-N/A in the detail modal though the list shows Success. → GitHub [#36](https://github.com/QA-Jo/teller-automation/issues/36)
+   Older transactions show Type `ERR - N/A` / all-N/A in the detail modal though the list shows Success. → GitHub [project#1970](https://github.com/talino-labs/higala.project/issues/1970)
 
 ### Product defect — covered by a separate updated test set
 - **Customer/account status change silently fails** — `t2.1.13/.14`, `t2.2.11/.13`
@@ -59,7 +59,7 @@ Of the 10 failures: **1** is a confirmed product defect, **4** are a product def
   Each needs the account's failed-attempt counter reset to exactly 0; lifting the lock doesn't reset the counter reliably, so they fail on a precondition. The lockout feature itself is proven (t1.2.10 blocks-after-5, t1.2.14 per-account, t1.2.15 reset-lifts-block pass).
 
 ### Blocked module(s)
-3. **t8.1 Interest Crediting — BLOCKED (by design), not a defect.** Confirmed with dev (jmangune-agsx, [project#1971](https://github.com/talino-labs/higala.project/issues/1971)): savings-interest crediting is **intentionally disabled on ITG under RFC-1722** (per-DFSP EOD rework) — prodmgmt commit `ea60dae` / PR #74 (merged 2026-08-14) no-ops `SavingsInterestService` and comments out the midnight scheduler (`0 0 0 * * *`); the last ITG credit on 17 Aug lines up with that merge. Cadence is **per-product config** (`interestConfiguration.interest.timePeriod`: daily→rate/365, monthly→rate/12), so the 01 Aug monthly-~2% batch and the 15–17 Aug daily credits are **both correct — not drift**. Crediting resumes with the per-DFSP EOD infra: talino-labs/higala-prodmgmt-api#92 (open; blocked on higala-microledger#190 + higala-jison#125). **Action taken:** the t8.1 suite is now **cadence-aware** (computes expected per each account's configured `timePeriod` instead of assuming daily). Structural tests (t8.1.6/.7) pass against existing records; computation tests re-validate once crediting resumes. Test-data prep (5% product + exact-balance accounts) can proceed now. → GitHub [#38](https://github.com/QA-Jo/teller-automation/issues/38) · project#1971
+3. **t8.1 Interest Crediting — BLOCKED (by design), not a defect.** Confirmed with dev (jmangune-agsx, [project#1971](https://github.com/talino-labs/higala.project/issues/1971)): savings-interest crediting is **intentionally disabled on ITG under RFC-1722** (per-DFSP EOD rework) — prodmgmt commit `ea60dae` / PR #74 (merged 2026-08-14) no-ops `SavingsInterestService` and comments out the midnight scheduler (`0 0 0 * * *`); the last ITG credit on 17 Aug lines up with that merge. Cadence is **per-product config** (`interestConfiguration.interest.timePeriod`: daily→rate/365, monthly→rate/12), so the 01 Aug monthly-~2% batch and the 15–17 Aug daily credits are **both correct — not drift**. Crediting resumes with the per-DFSP EOD infra: talino-labs/higala-prodmgmt-api#92 (open; blocked on higala-microledger#190 + higala-jison#125). **Action taken:** the t8.1 suite is now **cadence-aware** (computes expected per each account's configured `timePeriod` instead of assuming daily). Structural tests (t8.1.6/.7) pass against existing records; computation tests re-validate once crediting resumes. Test-data prep (5% product + exact-balance accounts) can proceed now. → [project#1971](https://github.com/talino-labs/higala.project/issues/1971) (labeled `no qa testing` / blocked)
 4. **t3.3 Create New Bank Account — not run (feature not deployed).** The account-onboarding wizard (T&C → Personal Info → Address → Financial Info) is not surfaced in the current ITG build. Verified 16 Sep 2026: no "Create New Bank Account" entry point for the Teller role (`jjavier+sa`) or the Maker role (`jjavier+jr1`); `/accounts/create` redirects away. The User Management → "Create User" flow is a different feature (creates system users, not customer accounts). No automated suite exists; revisit once the feature ships. Details in `COVERAGE_GAP_2026-09.md` §E.
 
 ## Test-defects fixed & verified this effort
@@ -72,7 +72,7 @@ Of the 10 failures: **1** is a confirmed product defect, **4** are a product def
 - **t7.2.10** — SoD "reject own" logged in as the approver instead of the maker
 
 ## Escalations & tracking
-- Parent ticket: [#37 — Teller Regression September 2026 bugs encountered](https://github.com/QA-Jo/teller-automation/issues/37) (Higala Project / Iteration 16), with sub-issues #35, #36, #38.
+- Parent ticket: [project#1968 — Teller and Mobile Regression September 2026 bugs encountered](https://github.com/talino-labs/higala.project/issues/1968) (Higala Project / Iteration 16), with sub-issues #1969 (loan double-count), #1970 (errored txn payload), #1971 (t8.1 interest — blocked/RFC-1722).
 - Full detail and evidence: `ESCALATIONS_2026-09.md`.
 
 ## Notes on environment constraints
