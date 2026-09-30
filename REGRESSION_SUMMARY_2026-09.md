@@ -39,7 +39,7 @@ Of the 10 failures: **1** is a confirmed product defect, **4** are a product def
 | 7_loans | t7.3 Loan Disbursements | 7 | 0 | 0 | ✅ |
 | 7_loans | t7.4 Loan Schedule | 5 | 0 | 0 | ✅ |
 | 7_loans | t7.5 Loan Repayment Processing | 15 | 0 | 0 | ✅ |
-| 7_loans | t7.6 Loan Payment History | 12 | 1 | 0 | loan double-count (see #2) |
+| 7_loans | t7.6 Loan Payment History | 12 | 1 | 0 | loan double-count (see #1) — ✅ fix verified 30 Sep on a post-fix payment |
 | 8_interest | t8.1 Interest Crediting | — | — | — | **Not run — blocked** (see #3) |
 
 ## Failure breakdown
@@ -47,6 +47,7 @@ Of the 10 failures: **1** is a confirmed product defect, **4** are a product def
 ### Confirmed product defect — filed
 1. **Loan payment "Total Amount Paid" double-counts interest** — `t7.6.11`
    Total = Principal + 2×Interest (839.94 vs expected 837.85). → GitHub [project#1969](https://github.com/talino-labs/higala.project/issues/1969)
+   **✅ Retested & verified fixed 30 Sep 2026 (forward).** A fresh post-fix payment (loan `7710345096460289`, 15% rate) reconciles: Principal 164,600.59 + Interest 6,250.00 = **Total 170,850.59** (would be 177,100.59 if still buggy); `t7.6.11` passes. *Note:* pre-fix records from the May–Sep 2026 window (loan interest off), incl. the originally-reported 10 Sep record on loan `7710396736994875`, still show Total = P + 2×Interest — historical artifacts, not backfilled (forward-only fix).
 2. **Transaction detail returns errored/empty payload for older records** — `t2.3.4` / `t3.2.4`
    Older transactions show Type `ERR - N/A` / all-N/A in the detail modal though the list shows Success. → GitHub [project#1970](https://github.com/talino-labs/higala.project/issues/1970)
 
