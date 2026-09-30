@@ -153,7 +153,7 @@ The 10 red tests a viewer sees are all investigated and accounted for (verified
 
 | Tests | # | Cause | Disposition |
 |-------|--:|-------|-------------|
-| `t7.6.11` | 1 | Loan "Total Amount Paid" **double-counts interest** — 839.94 vs Principal 835.76 + Interest 2.09 = 837.85 (`Total = Principal + 2×Interest`) | 🐞 **Real defect — filed [project#1969](https://github.com/talino-labs/higala.project/issues/1969)** |
+| `t7.6.11` | 1 | Loan "Total Amount Paid" **double-counts interest** — 839.94 vs Principal 835.76 + Interest 2.09 = 837.85 (`Total = Principal + 2×Interest`) | 🐞 [project#1969](https://github.com/talino-labs/higala.project/issues/1969) — **✅ fix verified 30 Sep on a post-fix payment (loan …289); t7.6.11 passes.** Old May–Sep records aren't backfilled (forward-only fix). |
 | `t2.1.13`/`.14`, `t2.2.11`/`.13` | 4 | Customer/account **status change silently fails** (modal submits, dismisses, persists nothing, no error). These are the mutating `status-change` set, normally excluded at run time via `--exclude-tag status-change` | 🐞 Product observation (escalate) **+** by-design exclusion — not part of a normal batch |
 | `t1.2.11`/`.12`/`.13`/`.16`/`.19` | 5 | Login **lockout counter-detail** tests — fail on a *precondition* (the failed-attempt counter isn't reset to exactly 0 when the lock is lifted) compounded by the auth **rate limit (429)** from many rapid attempts | ⚙️ Test-precondition + environment — **not a login defect** |
 
