@@ -50,6 +50,7 @@ Of the 10 failures: **1** is a confirmed product defect, **4** are a product def
    **✅ Retested & verified fixed 30 Sep 2026 (forward).** A fresh post-fix payment (loan `7710345096460289`, 15% rate) reconciles: Principal 164,600.59 + Interest 6,250.00 = **Total 170,850.59** (would be 177,100.59 if still buggy); `t7.6.11` passes. *Note:* pre-fix records from the May–Sep 2026 window (loan interest off), incl. the originally-reported 10 Sep record on loan `7710396736994875`, still show Total = P + 2×Interest — historical artifacts, not backfilled (forward-only fix).
 2. **Transaction detail returns errored/empty payload for older records** — `t2.3.4` / `t3.2.4`
    Older transactions show Type `ERR - N/A` / all-N/A in the detail modal though the list shows Success. → GitHub [project#1970](https://github.com/talino-labs/higala.project/issues/1970)
+   **✅ Retested & verified fixed 30 Sep 2026.** All 3 originally-errored records in Peach Villados' account (`7710458152114857`) now render real values: `547fa043…` Fund Transfer 88.00 Success · `7482a6a9…` Fund Transfer 848.00 Success · `f62692b4…` Fund Transfer 8,484.00 Success — no more `ERR - N/A`. (Backfilled/endpoint fix — historical records corrected, unlike #1969.)
 
 ### Product defect — covered by a separate updated test set
 - **Customer/account status change silently fails** — `t2.1.13/.14`, `t2.2.11/.13`
