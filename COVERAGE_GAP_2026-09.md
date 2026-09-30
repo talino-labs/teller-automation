@@ -127,6 +127,20 @@ is closed by automated **t2.2.15**.
 > CSVs to match automation (t5.1.13 = modal-appears, t5.1.14 = confirm-archive). Apply the same
 > renumber to the master sheet when convenient.
 
+## G. 🐞 Defect retests (post-fix verification, 30 Sep 2026)
+
+Two September-regression defects were redeployed to ITG and retested. Both **verified fixed**:
+
+| Defect | Test(s) | Fix scope | Retest result (30 Sep 2026) |
+|--------|---------|-----------|------------------------------|
+| Loan "Total Amount Paid" double-counts interest ([project#1969](https://github.com/talino-labs/higala.project/issues/1969)) | `t7.6.11` | **Forward-only** (new payments) | ✅ **PASS** on a fresh post-fix payment — loan `7710345096460289` (15%): Principal 164,600.59 + Interest 6,250.00 = **Total 170,850.59** (would be 177,100.59 if buggy). `t7.6.11` passes. **Note:** pre-fix May–Sep records (loan-interest-off window), incl. the reported 10 Sep record on loan `7710396736994875`, still show `Total = P + 2×Interest` — historical artifacts, not backfilled. |
+| Transaction detail returns errored/empty payload for older records ([project#1970](https://github.com/talino-labs/higala.project/issues/1970)) | `t2.3.4` / `t3.2.4` | **Backfill / endpoint** (historical records corrected) | ✅ **PASS** — the 3 originally-errored records in Peach Villados' account `7710458152114857` now render real values (`547fa043…` Fund Transfer 88.00 Success · `7482a6a9…` Fund Transfer 848.00 Success · `f62692b4…` Fund Transfer 8,484.00 Success); no more `ERR - N/A`. |
+
+Verification comments posted on both tickets; details in `REGRESSION_SUMMARY_2026-09.md`.
+The `t7.6.11` suite assertion (Total = Principal + Interest) and the `t2.3.4`/`t3.2.4` detail-render
+checks both hold on ITG post-fix. The test loan created for #1969 was **settled** afterward
+(2 payments, ₱341,701.17) to keep the Active Loans list clean.
+
 ## Recommended actions
 
 1. **t3.3 Create New Bank Account — BLOCKED, no action possible yet.** The onboarding wizard is not deployed on ITG (Section E). Do **not** treat it as an open automation gap; revisit and automate once the feature ships. There are currently **no automatable coverage gaps**.
