@@ -143,6 +143,7 @@ rate-limit artifacts. See [[itg-rate-limit-blocker]].
 - **Loan payment total double-counts interest** (t7.6.11). Total Amount Paid
   `839.94` vs Principal `835.76` + Interest `2.09` = `837.85`. The gap is
   exactly the interest, i.e. `Total = Principal + 2 x Interest`.
+  → **✅ FIXED — verified 30 Sep 2026** ([project#1969](https://github.com/talino-labs/higala.project/issues/1969)) on a fresh post-fix payment (loan `7710345096460289`, 15%): 164,600.59 + 6,250.00 = Total 170,850.59; `t7.6.11` passes. Forward-only — pre-fix May–Sep records aren't backfilled.
 
 ## Environment blockers — need admin, not code
 - **Auth rate limit.** Network-level block: *"Too many requests from this
@@ -154,12 +155,11 @@ rate-limit artifacts. See [[itg-rate-limit-blocker]].
   returns **"Access Restricted — your current role doesn't include permission
   to view this page."** t7.3.1 depends on t7.2 approving a loan first.
 
-## Open question
-- Transaction `547fa043e7424b6c956926466daa91df` (Fund Transfer) returns an
-  empty detail payload — every field `N/A`, amounts `0.00` — while
-  `20327d2dec2046b1bf2c3353c94c0fcf` (External Transfer) renders all 12 fields
-  correctly. Bad record, or Fund-Transfer-specific? One manual check settles it.
-  Affects t2.3.4 and t3.2.4 (both use that same record).
+## Resolved
+- **Errored/empty transaction-detail payload for older records** (t2.3.4 / t3.2.4).
+  Transaction `547fa043e7424b6c956926466daa91df` and other pre-2026 records showed
+  `Transaction Type = ERR - N/A` with every field `N/A` / `0.00` while the list
+  showed Success. → **✅ FIXED — verified 30 Sep 2026** ([project#1970](https://github.com/talino-labs/higala.project/issues/1970)): the 3 originally-errored records in account `7710458152114857` now render real values (`547fa043…` Fund Transfer 88.00 Success · `7482a6a9…` Fund Transfer 848.00 Success · `f62692b4…` Fund Transfer 8,484.00 Success). Backfill/endpoint fix — historical records corrected.
 
 ## Test defects fixed in this commit
 - **t1.4.2–.8** passed `email=${TELLER_EMAIL}` while `password` still defaulted
